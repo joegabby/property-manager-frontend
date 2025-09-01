@@ -1,0 +1,48 @@
+name: Merge & Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - dev   # run when dev branch is updated
+  workflow_dispatch: # allow manual trigger
+
+jobs:
+  merge-to-main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dev branch
+        uses: actions/checkout@v3
+        with:
+          ref: dev
+          fetch-depth: 0   # needed for full history to do merges
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge dev → main
+        run: |
+          git fetch origin main
+          git checkout main
+          git pull origin main
+          git merge dev --no-ff -m "Auto-merge dev → main [skip ci]"
+          git push origin main
+
+  deploy-vercel:
+    runs-on: ubuntu-latest
+    needs: merge-to-main
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+          prod: true

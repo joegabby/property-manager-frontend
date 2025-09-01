@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { verifyToken } from "@/services/auth-services";
 import { Button } from "@/components/ui/button";
@@ -19,11 +19,10 @@ export default function VerifyPage() {
       setStatus("error");
       return;
     }
-    const payload = { token };
 
     const tokenVerification = async () => {
       try {
-        const verify = await verifyToken(payload);
+        const verify = await verifyToken({ token });
         if (verify.data.statusCode !== 200) {
           throw new Error("Invalid or expired token");
         }
@@ -31,9 +30,11 @@ export default function VerifyPage() {
         setStatus("success");
 
         // Auto-redirect after 3 seconds
-        setTimeout(() => {
+        const timer = setTimeout(() => {
           router.push("/login");
         }, 3000);
+
+        return () => clearTimeout(timer); // cleanup
       } catch (err) {
         setStatus("error");
       }
@@ -45,7 +46,7 @@ export default function VerifyPage() {
   if (status === "loading") {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
-        <p>Verifying your email...</p>;
+        <p>Verifying your email...</p>
       </div>
     );
   }
@@ -58,20 +59,15 @@ export default function VerifyPage() {
     );
   }
 
+  // ✅ Success state
   return (
-    <Suspense fallback={<p>Loading verification...</p>}>
-      <div className="flex flex-col items-center justify-center h-screen">
-        <p className="text-green-600 mb-4">
-          ✅ Email verified successfully! Redirecting to login...
-        </p>
-        <Button
-          size="sm"
-          className=""
-          onClick={() => router.push("/login")}
-        >
-          Go to Login Now
-        </Button>
-      </div>
-    </Suspense>
+    <div className="flex flex-col items-center justify-center h-screen">
+      <p className="text-green-600 mb-4">
+        ✅ Email verified successfully! Redirecting to login...
+      </p>
+      <Button size="sm" onClick={() => router.push("/login")}>
+        Go to Login Now
+      </Button>
+    </div> 
   );
 }
