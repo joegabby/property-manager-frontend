@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { verifyToken } from "@/services/auth-services";
+import { Button } from "@/components/ui/button";
 
 export default function VerifyPage() {
   const searchParams = useSearchParams();
@@ -42,26 +43,35 @@ export default function VerifyPage() {
   }, [token, router]);
 
   if (status === "loading") {
-    return <p>Verifying your email...</p>;
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <p>Verifying your email...</p>;
+      </div>
+    );
   }
 
   if (status === "error") {
     return (
-      <p className="text-red-500">Invalid or expired verification link.</p>
+      <div className="flex flex-col items-center justify-center h-screen">
+        <p className="text-red-500">Invalid or expired verification link.</p>
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <p className="text-green-600 mb-4">
-        ✅ Email verified successfully! Redirecting to login...
-      </p>
-      <button
-        onClick={() => router.push("/login")}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-      >
-        Go to Login Now
-      </button>
-    </div>
+    <Suspense fallback={<p>Loading verification...</p>}>
+      <div className="flex flex-col items-center justify-center h-screen">
+        <p className="text-green-600 mb-4">
+          ✅ Email verified successfully! Redirecting to login...
+        </p>
+        <Button
+          size="sm"
+          className=""
+          onClick={() => router.push("/login")}
+        >
+          Go to Login Now
+        </Button>
+      </div>
+    </Suspense>
   );
 }
