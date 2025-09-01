@@ -3,7 +3,8 @@ import { RegisterFormData } from "@/lib/validations";
 import axios, { AxiosResponse } from "axios";
 import { headers } from "next/headers";
 
-const baseUrl = "http://localhost:5000/api/v1/user";
+// const baseUrl = "http://localhost:5000/api/v1/user";
+const baseUrl = "https://property-manager-backend-63ug.onrender.com/api/v1/user";
 const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
 export const sendInquiry = async (data:InquiryDto): Promise<any> => {
