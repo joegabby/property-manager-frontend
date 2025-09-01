@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { verifyToken } from "@/services/auth-services";
 
@@ -52,6 +52,7 @@ export default function VerifyPage() {
   }
 
   return (
+    <Suspense fallback={<p>Loading verification...</p>}>
     <div className="flex flex-col items-center justify-center h-screen">
       <p className="text-green-600 mb-4">
         ✅ Email verified successfully! Redirecting to login...
@@ -63,5 +64,6 @@ export default function VerifyPage() {
         Go to Login Now
       </button>
     </div>
+    </Suspense>
   );
 }
