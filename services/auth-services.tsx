@@ -1,7 +1,8 @@
 import { LoginFormData, RegisterFormData } from "@/lib/validations";
 import axios, { AxiosResponse } from "axios";
 
-const baseUrl = "http://localhost:5000/api/v1/auth";
+const baseUrl = "https://property-manager-backend-63ug.onrender.com/api/v1/auth";
+// const baseUrl = "http://localhost:5000/api/v1/auth";
 
 export const login = async (data:LoginFormData): Promise<any> => {
   try {
