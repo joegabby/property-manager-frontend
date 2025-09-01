@@ -18,9 +18,8 @@ export default function VerifyPage() {
       setStatus("error");
       return;
     }
-    const payload = {
-      token,
-    };
+    const payload = { token };
+
     const tokenVerification = async () => {
       try {
         const verify = await verifyToken(payload);
@@ -29,13 +28,18 @@ export default function VerifyPage() {
         }
 
         setStatus("success");
+
+        // Auto-redirect after 3 seconds
+        setTimeout(() => {
+          router.push("/login");
+        }, 3000);
       } catch (err) {
         setStatus("error");
       }
     };
 
     tokenVerification();
-  }, [token]);
+  }, [token, router]);
 
   if (status === "loading") {
     return <p>Verifying your email...</p>;
@@ -49,12 +53,14 @@ export default function VerifyPage() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <p className="text-green-600 mb-4">✅ Email verified successfully!</p>
+      <p className="text-green-600 mb-4">
+        ✅ Email verified successfully! Redirecting to login...
+      </p>
       <button
         onClick={() => router.push("/login")}
         className="px-4 py-2 bg-blue-600 text-white rounded-lg"
       >
-        Go to Login
+        Go to Login Now
       </button>
     </div>
   );
