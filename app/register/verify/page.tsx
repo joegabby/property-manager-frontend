@@ -68,6 +68,6 @@ export default function VerifyPage() {
       <Button size="sm" onClick={() => router.push("/login")}>
         Go to Login Now
       </Button>
-    </div>
+    </div> 
   );
 }
