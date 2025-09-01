@@ -6,8 +6,8 @@ import "./globals.css"
 import GlobalPreloader from "@/components/global-preloader"
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
+  title: "Property Hub",
+  description: "Castle and Castle properties",
   generator: "v0.app",
 }
 
