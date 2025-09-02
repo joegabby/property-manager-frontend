@@ -274,9 +274,8 @@ export default function UserDashboard() {
           {/* Property Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {properties.map((property: any) => (
-              <Link href={`/properties/${property._id}?from=user`}>
-                <Card
-                  key={property._id}
+              <Link key={property._id} href={`/properties/${property._id}?from=user`}>
+                <Card  
                   className="overflow-hidden hover:shadow-lg transition-shadow group"
                 >
                   <div className="relative">
