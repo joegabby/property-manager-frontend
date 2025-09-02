@@ -69,4 +69,5 @@ export enum NigerianStates {
   ZAMFARA = "Zamfara",
   FCT = "Federal Capital Territory",
 }
-export const baseMediaUrl = "http://localhost:5000/media"
+// export const baseMediaUrl = "http://localhost:5000/media"
+export const baseMediaUrl = "https://property-manager-backend-63ug.onrender.com/media"
