@@ -40,6 +40,7 @@ import {
   Bed,
   Filter,
   Square,
+  ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
 import { getAllProperties } from "@/services/property-services";
@@ -60,6 +61,7 @@ import page from "@/app/page";
 import { sendInquiry } from "@/services/user-services";
 import { InquiryDto } from "@/lib/user-dto";
 import { formatPrice } from "@/lib/utils";
+import router from "next/router";
 
 // Mock data for user
 
@@ -110,38 +112,6 @@ export default function UserDashboard() {
       </Badge>
     );
   };
-
-  // const filteredProperties = mockAvailableProperties.filter((property: any) => {
-  //   const matchesSearch =
-  //     property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     property.location.toLowerCase().includes(searchTerm.toLowerCase());
-  //   const matchesLocation =
-  //     locationFilter === "all" || property.state === locationFilter;
-  //   const matchesType = typeFilter === "all" || property.type === typeFilter;
-
-  //   let matchesPrice = true;
-  //   if (priceFilter !== "all") {
-  //     const price = Number.parseInt(property.price.replace(/[$,]/g, ""));
-  //     switch (priceFilter) {
-  //       case "under-400k":
-  //         matchesPrice = price < 400000;
-  //         break;
-  //       case "400k-600k":
-  //         matchesPrice = price >= 400000 && price <= 600000;
-  //         break;
-  //       case "600k-800k":
-  //         matchesPrice = price >= 600000 && price <= 800000;
-  //         break;
-  //       case "over-800k":
-  //         matchesPrice = price > 800000;
-  //         break;
-  //     }
-  //   }
-
-  //   return matchesSearch && matchesLocation && matchesType && matchesPrice;
-  // });
-
-  // const savedProperties = mockAvailableProperties.filter((p) => p.isSaved);
 
   const handleInquiry = (property: any) => {
     setSelectedProperty(property);

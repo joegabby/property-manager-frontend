@@ -7,7 +7,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { LayoutDashboard, Search, Heart, MessageSquare, Settings, LogOut, Menu, Home, User } from "lucide-react"
+import { LayoutDashboard, Search, Heart, MessageSquare, Settings, LogOut, Menu, Home, User, Building } from "lucide-react"
 
 interface UserLayoutProps {
   children: React.ReactNode
@@ -16,7 +16,7 @@ interface UserLayoutProps {
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/user/dashboard" },
   // { icon: Search, label: "Browse Agents", href: "/user/agents" },
-  // { icon: Heart, label: "Saved Properties", href: "/user/saved" },
+  { icon: Building, label: "Properties", href: "/user/properties" },
   // { icon: MessageSquare, label: "My Inquiries", href: "/user/inquiries" },
   { icon: User, label: "Profile", href: "/user/profile" },
   // { icon: Settings, label: "Settings", href: "/user/settings" },
@@ -28,6 +28,7 @@ export function UserLayout({ children }: UserLayoutProps) {
 
   const handleLogout = () => {
     localStorage.removeItem("token")
+    localStorage.removeItem("user")
     router.push("/login")
   }
 
@@ -35,10 +36,15 @@ export function UserLayout({ children }: UserLayoutProps) {
     <div className="flex flex-col h-full">
       <div className="p-6">
         <Link href="/user/dashboard" className="flex items-center space-x-2">
-          <Home className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold text-primary">PropertyHub</span>
+        <img
+            src= "/logo.png"
+            alt="castle and castle properties logo"
+            className=" object-contain"
+          />
+          {/* <Home className="h-6 w-6 text-primary" />
+          <span className="text-xl font-bold text-primary">Castle and Castle Properties</span> */}
         </Link>
-        <p className="text-sm text-muted-foreground mt-1">Find Your Home</p>
+        <p className="text-sm text-center text-muted-foreground mt-1">Find Your Home</p>
       </div>
 
       <nav className="flex-1 px-4 space-y-2">

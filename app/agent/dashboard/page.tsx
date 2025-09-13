@@ -74,6 +74,7 @@ import {
   NigerianStates,
   PropertyListingTypes,
   PropertyStatus,
+  PropertyType,
   UserRole,
 } from "@/lib/enums";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -87,19 +88,14 @@ import {
   PaginationNext,
 } from "@/components/ui/pagination";
 import Link from "next/link";
-import { getAgentStats, getInquiries, updateInquiry } from "@/services/user-services";
+import {
+  getAgentStats,
+  getInquiries,
+  updateInquiry,
+} from "@/services/user-services";
 import { updateInquiryDto } from "@/lib/user-dto";
-
-// Mock data for agent
-const mockAgentStats = {
-  totalProperties: 12,
-  activeListings: 8,
-  totalInquiries: 34,
-  pendingDocuments: 3,
-  monthlyViews: 1247,
-  averagePrice: "$485,000",
-};
-
+import { formatDate, formatPrice } from "@/lib/utils";
+import PreloaderSpinner from "@/components/ui/preloader";
 
 export default function AgentDashboard() {
   const [isAddPropertyOpen, setIsAddPropertyOpen] = useState(false);
@@ -121,42 +117,64 @@ export default function AgentDashboard() {
   const [inquiriesPage, setinquiriesPage] = useState(1);
   const [inquiriesTotalPages, setInquiriesTotalPages] = useState<any>({});
   const [isUpdatingInquiry, setIsUpdatingInquiry] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [agentStats, setAgentStats] = useState<any>({});
+  const [selectedMediaDelete, setSelectedMediaDelete] = useState<any>({});
+  const [queryCount, setQueryCount] = useState();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState("all");
+  const [listingType, setListingType] = useState("all");
+  const [inquiriesCount, setInquiriesCount] = useState();
+  const [inquiriesStatus, setInquiriesStatus] = useState("");
 
   const fetchPropertiesByAgent = async () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     console.log("USER", user);
-    const getProperties = await getPropertiesByAgentId(user.id);
+    setIsLoading(true);
+    const filters = {
+      state: locationFilter !== "all" ? locationFilter : null,
+      page: page,
+      limit: 10,
+      key: searchTerm,
+      status: statusFilter,
+      listingType: listingType !== "all" ? listingType : null,
+    };
+    const getProperties = await getPropertiesByAgentId(user.id, filters);
     setProperties(getProperties.data.body.data.items);
     setTotalPages(getProperties.data.body.data.pagination.totalPages);
+    setQueryCount(getProperties.data.body.data.pagination.totalItems);
+    setIsLoading(false);
   };
   const fetchAgentStats = async () => {
-    setIsDeleting(true);
+    // setIsDeleting(true);
     const response = await getAgentStats();
     if (response.data.statusCode === 200) {
       setAgentStats(response.data.body.data);
     }
   };
-   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
+
   const fetchInquiriesByAgent = async () => {
-    const response = await getInquiries();
+        setIsLoading(true);
+
+    const filters = {
+      status: inquiriesStatus,
+      page: inquiriesPage,
+    };
+    const response = await getInquiries(filters);
     setInquiries(response.data.body.data.inquiries);
     setInquiriesTotalPages(response.data.body.data?.pagination?.totalPages);
+    setInquiriesCount(response.data.body.data?.pagination?.totalItems);
+        setIsLoading(false);
 
     console.log("PROPERTIES", properties);
+
   };
   const handleInquiryStatusUpdate = async (
     inquiryId: string,
     inquiryStatus: string
   ) => {
-    setIsUpdatingInquiry(true)
+    setIsUpdatingInquiry(true);
     const data: updateInquiryDto = {
       inquiry_id: inquiryId,
       inquiry_state: inquiryStatus,
@@ -168,20 +186,31 @@ export default function AgentDashboard() {
     ) {
       fetchPropertiesByAgent();
       fetchInquiriesByAgent();
-      setIsUpdatingInquiry(false)
+      setIsUpdatingInquiry(false);
     }
   };
+  // useEffect(() => {
+  //   fetchAgentStats();
+  //   fetchPropertiesByAgent();
+  //   fetchInquiriesByAgent();
+  // }, [properties, page, inquiriesPage]);
   useEffect(() => {
-    fetchAgentStats();
+    fetchAgentStats(); // run only once on mount
+  }, [properties]);
+
+  useEffect(() => {
     fetchPropertiesByAgent();
+  }, [page, locationFilter, searchTerm, statusFilter, listingType]);
+
+  useEffect(() => {
     fetchInquiriesByAgent();
-  }, [properties,page, inquiriesPage]);
+  }, [inquiriesPage, inquiriesStatus]);
   const getStatusBadge = (status: string) => {
     const colors = {
       available: "bg-green-100 text-green-800",
       pending: "bg-yellow-100 text-yellow-800",
       approved: "bg-green-100 text-green-800",
-      rejected: "bg-red-100 text-red-800",
+      sold: "bg-red-100 text-red-800",
       new: "bg-blue-100 text-blue-800",
       responded: "bg-gray-100 text-gray-800",
     } as const;
@@ -202,10 +231,13 @@ export default function AgentDashboard() {
       state: "",
       description: "",
       title: "",
-      price: 0,
+      price: undefined,
       address: "",
       listing_type: "",
       status: "",
+      propertyType: "",
+      bedrooms: undefined,
+      baths: undefined,
     },
   });
   const { isSubmitting } = form.formState;
@@ -216,10 +248,12 @@ export default function AgentDashboard() {
       state: "",
       description: "",
       title: "",
-      price: 0,
+      price: undefined,
       address: "",
       listing_type: "",
       status: "",
+      bedrooms: undefined,
+      baths: undefined,
     },
   });
 
@@ -229,10 +263,12 @@ export default function AgentDashboard() {
         state: selectedPropertyUpdate.state || "",
         description: selectedPropertyUpdate.description || "",
         title: selectedPropertyUpdate.title || "",
-        price: selectedPropertyUpdate.price || 0,
+        price: selectedPropertyUpdate.price || undefined,
         address: selectedPropertyUpdate.address || "",
         listing_type: selectedPropertyUpdate.listingType || "",
         status: selectedPropertyUpdate.status || "",
+        baths: selectedPropertyUpdate.baths || "",
+        bedrooms: selectedPropertyUpdate.bedrooms || "",
       });
     }
   }, [selectedPropertyUpdate, updateForm]);
@@ -252,25 +288,31 @@ export default function AgentDashboard() {
     }
 
     // append video
-    if (data.video && data.video.length > 0) {
-      data.video.forEach((file: File) => {
-        formData.append("video", file);
+    if (data.videos && data.videos.length > 0) {
+      data.videos.forEach((file: File) => {
+        formData.append("videos", file);
       });
     }
     // append any other text fields from the form
     Object.keys(data).forEach((key) => {
-      if (key !== "images" && key !== "video") {
+      if (key !== "images" && key !== "videos") {
         formData.append(key, (data as any)[key]);
       }
     });
     console.log("FORM DATA", formData);
-    const inquiry = await createProperty(formData);
+    const response = await createProperty(formData);
     if (
-      inquiry.data.statusCode === 200 &&
-      inquiry.data.message === "SUCCESSFUL"
+      response.data?.statusCode === 200 &&
+      response.data?.message === "SUCCESSFUL"
     ) {
       fetchPropertiesByAgent();
       setIsAddPropertyOpen(false);
+    } else {
+      console.log("ERR", response);
+      const resErr =
+        response?.response?.data.customMessage ||
+        response?.response?.data.error;
+      setError(resErr);
     }
   };
   const handleUpdateProperty = async (data: AddPropertyFormData) => {
@@ -286,14 +328,14 @@ export default function AgentDashboard() {
     }
 
     // append video
-    if (data.video && data.video.length > 0) {
-      data.video.forEach((file: File) => {
-        formData.append("video", file);
+    if (data.videos && data.videos.length > 0) {
+      data.videos.forEach((file: File) => {
+        formData.append("videos", file);
       });
     }
     // append any other text fields from the form
     Object.keys(data).forEach((key) => {
-      if (key !== "images" && key !== "video") {
+      if (key !== "images" && key !== "videos") {
         formData.append(key, (data as any)[key]);
       }
     });
@@ -306,6 +348,7 @@ export default function AgentDashboard() {
     ) {
       fetchPropertiesByAgent();
       setIsAddPropertyOpen(false);
+      handleCloseUpdateDialog();
     } else if (update.response?.data) {
       setError(update.response?.data.customMessage);
     }
@@ -406,39 +449,11 @@ export default function AgentDashboard() {
           </CardContent>
         </Card>
 
-        {/* <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Pending Documents
-            </CardTitle>
-            <FileCheck className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {mockAgentStats.pendingDocuments}
-            </div>
-            <p className="text-xs text-muted-foreground">Awaiting approval</p>
-          </CardContent>
-        </Card> */}
-
-        {/* <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">
-              {mockAgentStats.monthlyViews}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Across all properties
-            </p>
-          </CardContent>
-        </Card> */}
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Price</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Average Portfolio Price
+            </CardTitle>
             <CardTitle className="text-sm font-medium">&#8358;</CardTitle>
           </CardHeader>
           <CardContent>
@@ -531,12 +546,16 @@ export default function AgentDashboard() {
                                       <div className="relative">
                                         <Input
                                           type="number"
+                                          min={1}
                                           {...field}
-                                          onChange={(e) =>
+                                          onChange={(e) => {
+                                            const value = e.target.value;
                                             field.onChange(
-                                              Number(e.target.value)
-                                            )
-                                          } // 👈 cast to number
+                                              value === ""
+                                                ? undefined
+                                                : Number(value)
+                                            );
+                                          }}
                                           value={field.value ?? ""}
                                         />
                                       </div>
@@ -644,6 +663,7 @@ export default function AgentDashboard() {
                               )}
                             />
                           </div>
+
                           <div className="space-y-2">
                             <FormField
                               control={form.control}
@@ -665,43 +685,131 @@ export default function AgentDashboard() {
                               )}
                             />
                           </div>
-                          <div className="space-y-2">
-                            <FormField
-                              control={form.control}
-                              name="status"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Property Status</FormLabel>
-                                  <FormControl>
-                                    <div className="relative">
-                                      <Select
-                                        onValueChange={field.onChange}
-                                        value={field.value}
-                                      >
-                                        <FormControl>
-                                          <SelectTrigger>
-                                            <SelectValue placeholder="Select Listing Type" />
-                                          </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                          {Object.values(PropertyStatus).map(
-                                            (status) => (
-                                              <SelectItem
-                                                key={status}
-                                                value={status}
-                                              >
-                                                {status}
-                                              </SelectItem>
-                                            )
-                                          )}
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <FormField
+                                control={form.control}
+                                name="status"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Property Status</FormLabel>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <Select
+                                          onValueChange={field.onChange}
+                                          value={field.value}
+                                        >
+                                          <FormControl>
+                                            <SelectTrigger>
+                                              <SelectValue placeholder="Select Listing Type" />
+                                            </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                            {Object.values(PropertyStatus).map(
+                                              (status) => (
+                                                <SelectItem
+                                                  key={status}
+                                                  value={status}
+                                                >
+                                                  {status}
+                                                </SelectItem>
+                                              )
+                                            )}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <FormField
+                                control={form.control}
+                                name="propertyType"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Property type</FormLabel>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <Select
+                                          onValueChange={field.onChange}
+                                          value={field.value}
+                                        >
+                                          <FormControl>
+                                            <SelectTrigger>
+                                              <SelectValue placeholder="Select Property Type" />
+                                            </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                            {Object.values(PropertyType).map(
+                                              (status) => (
+                                                <SelectItem
+                                                  key={status}
+                                                  value={status}
+                                                >
+                                                  {status}
+                                                </SelectItem>
+                                              )
+                                            )}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <FormField
+                                control={form.control}
+                                name="bedrooms"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Bedrooms</FormLabel>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <Input
+                                          type="number"
+                                          min={0}
+                                          placeholder="Enter number of bedrooms"
+                                          className=""
+                                          {...field}
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <FormField
+                                control={form.control}
+                                name="baths"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Bathrooms</FormLabel>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <Input
+                                          type="number"
+                                          min={0}
+                                          placeholder="Enter number of bathrooms"
+                                          className=""
+                                          {...field}
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
                           </div>
                           <div className="space-y-2">
                             <FormField
@@ -709,7 +817,7 @@ export default function AgentDashboard() {
                               name="images"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Upload Images (Max 5)</FormLabel>
+                                  <FormLabel>Upload Images</FormLabel>
                                   <FormControl>
                                     <input
                                       type="file"
@@ -722,16 +830,16 @@ export default function AgentDashboard() {
                                           input.files || []
                                         );
 
-                                        if (files.length > 5) {
-                                          alert(
-                                            "You can only upload up to 5 images."
-                                          );
-                                          // clear input value
-                                          input.value = "";
-                                          // also clear react-hook-form state
-                                          field.onChange([]);
-                                          return;
-                                        }
+                                        // if (files.length > 5) {
+                                        //   alert(
+                                        //     "You can only upload up to 5 images."
+                                        //   );
+                                        //   // clear input value
+                                        //   input.value = "";
+                                        //   // also clear react-hook-form state
+                                        //   field.onChange([]);
+                                        //   return;
+                                        // }
 
                                         field.onChange(files);
                                       }}
@@ -745,7 +853,7 @@ export default function AgentDashboard() {
                           <div className="space-y-2">
                             <FormField
                               control={form.control}
-                              name="video"
+                              name="videos"
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>Upload Video</FormLabel>
@@ -753,9 +861,12 @@ export default function AgentDashboard() {
                                     <Input
                                       type="file"
                                       accept="video/*"
+                                      multiple
                                       onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        field.onChange(file ? [file] : []);
+                                        const files = e.target.files
+                                          ? Array.from(e.target.files)
+                                          : [];
+                                        field.onChange(files);
                                       }}
                                     />
                                   </FormControl>
@@ -784,93 +895,384 @@ export default function AgentDashboard() {
                 </Dialog>
               </div>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Property</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Inquiries</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {properties.map((property: any) => (
-                    <TableRow key={property._id}>
-                      <TableCell className="font-medium">
-                        {property.title}
-                      </TableCell>
-                      <TableCell>{property.price}</TableCell>
-                      <TableCell>{property.state}</TableCell>
-                      <TableCell>{property.listingType}</TableCell>
-                      <TableCell>
-                        {getStatusBadge(property.status.toLowerCase())}
-                      </TableCell>
-                      <TableCell>{property.inquiryCount}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Link href={`/properties/${property._id}?from=agent`}>
-                            <Button variant="outline" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Dialog
-                            open={selectedPropertyUpdate._id === property._id}
-                            onOpenChange={(isOpen) =>
-                              isOpen
-                                ? handleOpenUpdateDialog(property)
-                                : handleCloseUpdateDialog()
-                            }
-                          >
-                            <DialogTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-2xl max-h-[75%] overflow-x-hidden overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle>
-                                  Edit Property: {property.title}
-                                </DialogTitle>
-                                <DialogDescription>
-                                  Fill in the appropriate details for this
-                                  property listing
-                                </DialogDescription>
-                              </DialogHeader>
-                              {/* <pre>{JSON.stringify(updateForm.watch(), null, 2)}</pre> */}
 
-                              <Form {...updateForm}>
-                                <form
-                                  onSubmit={updateForm.handleSubmit(
-                                    handleUpdateProperty
-                                  )}
-                                  className="space-y-4"
-                                >
-                                  {error && (
-                                    <Alert variant="destructive">
-                                      <AlertDescription>
-                                        {error}
-                                      </AlertDescription>
-                                    </Alert>
-                                  )}
-                                  <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-2 gap-4">
+            <CardContent>
+              <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
+                <Input
+                  placeholder="Search by title,address or description"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="sm:max-w-[200px] border border-muted-foreground/50"
+                />
+                <Select
+                  value={locationFilter}
+                  onValueChange={setLocationFilter}
+                >
+                  <SelectTrigger className="w-full sm:max-w-[180px] border border-muted-foreground/50">
+                    <SelectValue placeholder="Filter by location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    {Object.values(NigerianStates).map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={listingType} onValueChange={setListingType}>
+                  <SelectTrigger className="w-full sm:w-[180px] border border-muted-foreground/50">
+                    <SelectValue placeholder="Filter by listing type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Listing Types</SelectItem>
+                    {Object.values(PropertyListingTypes).map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type.toLowerCase().charAt(0).toUpperCase() +
+                          type.slice(1).toLowerCase()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px] border border-muted-foreground/50">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    {Object.values(PropertyStatus).map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status.toLowerCase().charAt(0).toUpperCase() +
+                          status.slice(1).toLowerCase()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm font-medium">
+                  Found {queryCount} properties
+                </p>
+              </div>
+              {isLoading ? (
+                <PreloaderSpinner />
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Property</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Inquiries</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {properties.map((property: any) => (
+                      <TableRow key={property._id}>
+                        <TableCell className="font-medium">
+                          {property.title}
+                        </TableCell>
+                        <TableCell>{formatPrice(property.price)}</TableCell>
+                        <TableCell>{property.state}</TableCell>
+                        <TableCell>
+                          {" "}
+                          {property.listingType.charAt(0).toUpperCase() +
+                            property.listingType.slice(1).toLowerCase()}
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(property.status.toLowerCase())}
+                        </TableCell>
+                        <TableCell>{property.inquiryCount}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Link
+                              href={`/properties/${property._id}`}
+                            >
+                              <Button variant="outline" size="sm">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Dialog
+                              open={selectedPropertyUpdate._id === property._id}
+                              onOpenChange={(isOpen) =>
+                                isOpen
+                                  ? handleOpenUpdateDialog(property)
+                                  : handleCloseUpdateDialog()
+                              }
+                            >
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl max-h-[75%] overflow-x-hidden overflow-y-auto">
+                                <DialogHeader>
+                                  <DialogTitle>
+                                    Edit Property: {property.title}
+                                  </DialogTitle>
+                                  <DialogDescription>
+                                    Fill in the appropriate details for this
+                                    property listing
+                                  </DialogDescription>
+                                </DialogHeader>
+                                {/* <pre>{JSON.stringify(updateForm.watch(), null, 2)}</pre> */}
+
+                                <Form {...updateForm}>
+                                  <form
+                                    onSubmit={updateForm.handleSubmit(
+                                      handleUpdateProperty
+                                    )}
+                                    className="space-y-4"
+                                  >
+                                    {error && (
+                                      <Alert variant="destructive">
+                                        <AlertDescription>
+                                          {error}
+                                        </AlertDescription>
+                                      </Alert>
+                                    )}
+                                    <div className="grid gap-4 py-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                          <FormField
+                                            control={updateForm.control}
+                                            name="title"
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormLabel>
+                                                  Property Title
+                                                </FormLabel>
+                                                <FormControl>
+                                                  <div className="relative">
+                                                    <Input
+                                                      placeholder="Enter property title"
+                                                      className=""
+                                                      {...field}
+                                                    />
+                                                  </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <FormField
+                                            control={updateForm.control}
+                                            name="price"
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormLabel>Price</FormLabel>
+                                                <FormControl>
+                                                  <div className="relative">
+                                                    <Input
+                                                      type="number"
+                                                      min={1}
+                                                      {...field}
+                                                      onChange={(e) => {
+                                                        const value =
+                                                          e.target.value;
+                                                        field.onChange(
+                                                          value === ""
+                                                            ? undefined
+                                                            : Number(value)
+                                                        );
+                                                      }}
+                                                      value={field.value ?? ""}
+                                                    />
+                                                  </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                          <FormField
+                                            control={updateForm.control}
+                                            name="state"
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormLabel>State</FormLabel>
+                                                <FormControl>
+                                                  <div className="relative">
+                                                    <Select
+                                                      onValueChange={
+                                                        field.onChange
+                                                      }
+                                                      value={field.value} // 👈 not defaultValue
+                                                    >
+                                                      <SelectTrigger>
+                                                        <SelectValue placeholder="Select State" />
+                                                      </SelectTrigger>
+                                                      <SelectContent>
+                                                        {Object.values(
+                                                          NigerianStates
+                                                        ).map((state) => (
+                                                          <SelectItem
+                                                            key={state}
+                                                            value={state}
+                                                          >
+                                                            {state}
+                                                          </SelectItem>
+                                                        ))}
+                                                      </SelectContent>
+                                                    </Select>
+                                                  </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <FormField
+                                            control={updateForm.control}
+                                            name="listing_type"
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormLabel>
+                                                  Property Type
+                                                </FormLabel>
+                                                <FormControl>
+                                                  <div className="relative">
+                                                    <Select
+                                                      onValueChange={
+                                                        field.onChange
+                                                      }
+                                                      value={field.value}
+                                                    >
+                                                      <FormControl>
+                                                        <SelectTrigger>
+                                                          <SelectValue placeholder="Select Listing Type" />
+                                                        </SelectTrigger>
+                                                      </FormControl>
+                                                      <SelectContent>
+                                                        {Object.values(
+                                                          PropertyListingTypes
+                                                        ).map((listType) => (
+                                                          <SelectItem
+                                                            key={listType}
+                                                            value={listType}
+                                                          >
+                                                            {listType}
+                                                          </SelectItem>
+                                                        ))}
+                                                      </SelectContent>
+                                                    </Select>
+                                                  </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                        </div>
+                                      </div>
                                       <div className="space-y-2">
                                         <FormField
                                           control={updateForm.control}
-                                          name="title"
+                                          name="description"
+                                          render={({ field }) => (
+                                            <FormItem>
+                                              <FormLabel>Description</FormLabel>
+                                              <FormControl>
+                                                <div className="relative">
+                                                  <Textarea
+                                                    placeholder="Property description"
+                                                    rows={4}
+                                                    {...field}
+                                                  />
+                                                </div>
+                                              </FormControl>
+                                              <FormMessage />
+                                            </FormItem>
+                                          )}
+                                        />
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                          <FormField
+                                            control={updateForm.control}
+                                            name="bedrooms"
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormLabel>Bedrooms</FormLabel>
+                                                <FormControl>
+                                                  <div className="relative">
+                                                    <Input
+                                                      type="number"
+                                                      min={0}
+                                                      placeholder="Enter number of bedrooms"
+                                                      className=""
+                                                      {...field}
+                                                      onChange={(e) => {
+                                                        const value =
+                                                          e.target.value;
+                                                        field.onChange(
+                                                          value === ""
+                                                            ? undefined
+                                                            : Number(value)
+                                                        );
+                                                      }}
+                                                      value={field.value ?? ""}
+                                                    />
+                                                  </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <FormField
+                                            control={updateForm.control}
+                                            name="baths"
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormLabel>Bathrooms</FormLabel>
+                                                <FormControl>
+                                                  <div className="relative">
+                                                    <Input
+                                                      type="number"
+                                                      min={0}
+                                                      placeholder="Enter number of bathrooms"
+                                                      className=""
+                                                      {...field}
+                                                      onChange={(e) => {
+                                                        const value =
+                                                          e.target.value;
+                                                        field.onChange(
+                                                          value === ""
+                                                            ? undefined
+                                                            : Number(value)
+                                                        );
+                                                      }}
+                                                      value={field.value ?? ""}
+                                                    />
+                                                  </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <FormField
+                                          control={updateForm.control}
+                                          name="address"
                                           render={({ field }) => (
                                             <FormItem>
                                               <FormLabel>
-                                                Property Title
+                                                Property Address
                                               </FormLabel>
                                               <FormControl>
                                                 <div className="relative">
                                                   <Input
-                                                    placeholder="Enter property title"
+                                                    placeholder="Enter property address"
                                                     className=""
                                                     {...field}
                                                   />
@@ -884,77 +1286,11 @@ export default function AgentDashboard() {
                                       <div className="space-y-2">
                                         <FormField
                                           control={updateForm.control}
-                                          name="price"
-                                          render={({ field }) => (
-                                            <FormItem>
-                                              <FormLabel>Price</FormLabel>
-                                              <FormControl>
-                                                <div className="relative">
-                                                  <Input
-                                                    type="number"
-                                                    {...field}
-                                                    onChange={(e) =>
-                                                      field.onChange(
-                                                        Number(e.target.value)
-                                                      )
-                                                    } // 👈 cast to number
-                                                    value={field.value ?? ""}
-                                                  />
-                                                </div>
-                                              </FormControl>
-                                              <FormMessage />
-                                            </FormItem>
-                                          )}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div className="space-y-2">
-                                        <FormField
-                                          control={updateForm.control}
-                                          name="state"
-                                          render={({ field }) => (
-                                            <FormItem>
-                                              <FormLabel>State</FormLabel>
-                                              <FormControl>
-                                                <div className="relative">
-                                                  <Select
-                                                    onValueChange={
-                                                      field.onChange
-                                                    }
-                                                    value={field.value} // 👈 not defaultValue
-                                                  >
-                                                    <SelectTrigger>
-                                                      <SelectValue placeholder="Select State" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                      {Object.values(
-                                                        NigerianStates
-                                                      ).map((state) => (
-                                                        <SelectItem
-                                                          key={state}
-                                                          value={state}
-                                                        >
-                                                          {state}
-                                                        </SelectItem>
-                                                      ))}
-                                                    </SelectContent>
-                                                  </Select>
-                                                </div>
-                                              </FormControl>
-                                              <FormMessage />
-                                            </FormItem>
-                                          )}
-                                        />
-                                      </div>
-                                      <div className="space-y-2">
-                                        <FormField
-                                          control={updateForm.control}
-                                          name="listing_type"
+                                          name="status"
                                           render={({ field }) => (
                                             <FormItem>
                                               <FormLabel>
-                                                Property Type
+                                                Property Status
                                               </FormLabel>
                                               <FormControl>
                                                 <div className="relative">
@@ -971,13 +1307,13 @@ export default function AgentDashboard() {
                                                     </FormControl>
                                                     <SelectContent>
                                                       {Object.values(
-                                                        PropertyListingTypes
-                                                      ).map((listType) => (
+                                                        PropertyStatus
+                                                      ).map((status) => (
                                                         <SelectItem
-                                                          key={listType}
-                                                          value={listType}
+                                                          key={status}
+                                                          value={status}
                                                         >
-                                                          {listType}
+                                                          {status}
                                                         </SelectItem>
                                                       ))}
                                                     </SelectContent>
@@ -989,360 +1325,299 @@ export default function AgentDashboard() {
                                           )}
                                         />
                                       </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <FormField
-                                        control={updateForm.control}
-                                        name="description"
-                                        render={({ field }) => (
-                                          <FormItem>
-                                            <FormLabel>Description</FormLabel>
-                                            <FormControl>
-                                              <div className="relative">
-                                                <Textarea
-                                                  placeholder="Property description"
-                                                  rows={4}
-                                                  {...field}
-                                                />
-                                              </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                          </FormItem>
-                                        )}
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <FormField
-                                        control={updateForm.control}
-                                        name="address"
-                                        render={({ field }) => (
-                                          <FormItem>
-                                            <FormLabel>
-                                              Property Address
-                                            </FormLabel>
-                                            <FormControl>
-                                              <div className="relative">
-                                                <Input
-                                                  placeholder="Enter property address"
-                                                  className=""
-                                                  {...field}
-                                                />
-                                              </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                          </FormItem>
-                                        )}
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <FormField
-                                        control={updateForm.control}
-                                        name="status"
-                                        render={({ field }) => (
-                                          <FormItem>
-                                            <FormLabel>
-                                              Property Status
-                                            </FormLabel>
-                                            <FormControl>
-                                              <div className="relative">
-                                                <Select
-                                                  onValueChange={field.onChange}
-                                                  value={field.value}
+                                      <div className="space-y-2">
+                                        <FormField
+                                          control={updateForm.control}
+                                          name="images"
+                                          render={({ field }) => (
+                                            <FormItem>
+                                              <div className="!flex justify-between w-full">
+                                                <FormLabel>
+                                                  Upload Images (Max 5)
+                                                </FormLabel>
+                                                <Dialog
+                                                  open={isDeleteMediaOpen}
+                                                  onOpenChange={
+                                                    setIsDeleteMediaOpen
+                                                  }
                                                 >
-                                                  <FormControl>
-                                                    <SelectTrigger>
-                                                      <SelectValue placeholder="Select Listing Type" />
-                                                    </SelectTrigger>
-                                                  </FormControl>
-                                                  <SelectContent>
-                                                    {Object.values(
-                                                      PropertyStatus
-                                                    ).map((status) => (
-                                                      <SelectItem
-                                                        key={status}
-                                                        value={status}
-                                                      >
-                                                        {status}
-                                                      </SelectItem>
-                                                    ))}
-                                                  </SelectContent>
-                                                </Select>
-                                              </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                          </FormItem>
-                                        )}
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <FormField
-                                        control={updateForm.control}
-                                        name="images"
-                                        render={({ field }) => (
-                                          <FormItem>
-                                            <div className="!flex justify-between w-full">
-                                              <FormLabel>
-                                                Upload Images (Max 5)
-                                              </FormLabel>
-                                              <Dialog
-                                                open={isDeleteMediaOpen}
-                                                onOpenChange={
-                                                  setIsDeleteMediaOpen
-                                                }
-                                              >
-                                                <DialogTrigger asChild>
-                                                  <p className="underline text-red-400">
-                                                    Delete Media Files
-                                                  </p>
-                                                </DialogTrigger>
-                                                <DialogContent className="max-w-2xl max-h-[75%] overflow-x-hidden overflow-y-auto">
-                                                  <DialogHeader>
-                                                    <DialogTitle>
-                                                      Delete Media Files for:
-                                                      {
-                                                        selectedPropertyUpdate.title
-                                                      }
-                                                    </DialogTitle>
-                                                    {error && (
-                                                      <Alert variant="destructive">
-                                                        <AlertDescription>
-                                                          {error}
-                                                        </AlertDescription>
-                                                      </Alert>
-                                                    )}
-                                                  </DialogHeader>
-                                                  <div>
-                                                    {selectedPropertyUpdate?.media?.map(
-                                                      (media: any) => {
-                                                        return (
-                                                          <div
-                                                            key={media._id}
-                                                            className="p-[5px] my-[5px] rounded-[5px] border border-grey-300 flex justify-between items-center"
-                                                          >
-                                                            <div>
-                                                              {media.type.toLowerCase() ===
-                                                              "image" ? (
-                                                                <img
-                                                                  src={
-                                                                    `${baseMediaUrl}/images/${media?.url}` ||
-                                                                    "/placeholder.svg"
-                                                                  }
-                                                                  alt={
-                                                                    selectedPropertyUpdate.title
-                                                                  }
-                                                                  className="w-[90px] h-[90px] object-cover"
-                                                                />
-                                                              ) : (
-                                                                <div className="relative">
-                                                                  <video
-                                                                    src={
-                                                                      media?.url
-                                                                        ? `${baseMediaUrl}/videos/${media?.url}`
-                                                                        : "/placeholder.svg"
-                                                                    }
-                                                                    className="w-[90px] h-[90px]"
-                                                                    poster="/video-thumbnail.png"
-                                                                  />
-
-                                                                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                                                                    <Play className="h-4 w-4 text-white" />
-                                                                  </div>
-                                                                </div>
-                                                              )}
-                                                            </div>
-                                                            <p>{media.type}</p>
-                                                            <Dialog
-                                                              open={
-                                                                isDeleteBoxOpen
-                                                              }
-                                                              onOpenChange={
-                                                                setDeleteBoxOpen
-                                                              }
+                                                  <DialogTrigger asChild>
+                                                    <p className="underline text-red-400">
+                                                      Delete Media Files
+                                                    </p>
+                                                  </DialogTrigger>
+                                                  <DialogContent className="max-w-2xl max-h-[75%] overflow-x-hidden overflow-y-auto">
+                                                    <DialogHeader>
+                                                      <DialogTitle>
+                                                        Delete Media Files for:
+                                                        {
+                                                          selectedPropertyUpdate.title
+                                                        }
+                                                      </DialogTitle>
+                                                      {error && (
+                                                        <Alert variant="destructive">
+                                                          <AlertDescription>
+                                                            {error}
+                                                          </AlertDescription>
+                                                        </Alert>
+                                                      )}
+                                                    </DialogHeader>
+                                                    <div>
+                                                      {selectedPropertyUpdate?.media?.map(
+                                                        (media: any) => {
+                                                          return (
+                                                            <div
+                                                              key={media._id}
+                                                              className="p-[5px] my-[5px] rounded-[5px] border border-grey-300 flex justify-between items-center"
                                                             >
-                                                              <DialogTrigger
-                                                                asChild
-                                                              >
-                                                                <Button
-                                                                  variant="outline"
-                                                                  size="sm"
-                                                                  className="bg-red-500"
-                                                                >
-                                                                  <Trash className="h-4 w-4 text-white" />
-                                                                </Button>
-                                                              </DialogTrigger>
-                                                              <DialogContent className="max-w-2xl max-h-[75%] overflow-x-hidden overflow-y-auto">
-                                                                <DialogHeader>
-                                                                  <DialogTitle>
-                                                                    Are you sure
-                                                                    you want to
-                                                                    delete this
-                                                                    media file?
-                                                                  </DialogTitle>
-                                                                </DialogHeader>
-
-                                                                <div className="flex justify-end gap-2">
-                                                                  <Button
-                                                                    variant="outline"
-                                                                    onClick={() =>
-                                                                      setDeleteBoxOpen(
-                                                                        false
-                                                                      )
+                                                              <div>
+                                                                {media.type.toLowerCase() ===
+                                                                "image" ? (
+                                                                  <img
+                                                                    src={
+                                                                      `${baseMediaUrl}/images/${media?.url}` ||
+                                                                      "/placeholder.svg"
                                                                     }
-                                                                  >
-                                                                    Cancel
-                                                                  </Button>
+                                                                    alt={
+                                                                      selectedPropertyUpdate.title
+                                                                    }
+                                                                    className="w-[90px] h-[90px] object-cover"
+                                                                  />
+                                                                ) : (
+                                                                  <div className="relative">
+                                                                    <video
+                                                                      src={
+                                                                        media?.url
+                                                                          ? `${baseMediaUrl}/videos/${media?.url}`
+                                                                          : "/placeholder.svg"
+                                                                      }
+                                                                      className="w-[90px] h-[90px]"
+                                                                      poster="/video-thumbnail.png"
+                                                                    />
+
+                                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                                      <Play className="h-4 w-4 text-white" />
+                                                                    </div>
+                                                                  </div>
+                                                                )}
+                                                              </div>
+                                                              <p>
+                                                                {media.type}
+                                                              </p>
+                                                              <Dialog
+                                                                // open={
+                                                                //   isDeleteBoxOpen
+                                                                // }
+                                                                // onOpenChange={
+                                                                //   setDeleteBoxOpen
+                                                                // }
+                                                                open={
+                                                                  selectedMediaDelete._id ===
+                                                                  media._id
+                                                                }
+                                                                onOpenChange={(
+                                                                  isOpen
+                                                                ) =>
+                                                                  isOpen
+                                                                    ? setSelectedMediaDelete(
+                                                                        media
+                                                                      )
+                                                                    : setSelectedMediaDelete(
+                                                                        {}
+                                                                      )
+                                                                }
+                                                              >
+                                                                <DialogTrigger
+                                                                  asChild
+                                                                >
                                                                   <Button
                                                                     variant="outline"
                                                                     size="sm"
                                                                     className="bg-red-500"
-                                                                    onClick={() =>
-                                                                      handleDeletePropertyMedia(
-                                                                        selectedPropertyUpdate._id,
-                                                                        media._id
-                                                                      )
-                                                                    }
                                                                   >
-                                                                    {isDeletingMedia
-                                                                      ? "Deleting..."
-                                                                      : "Delete"}
+                                                                    <Trash className="h-4 w-4 text-white" />
                                                                   </Button>
-                                                                </div>
-                                                              </DialogContent>
-                                                            </Dialog>
-                                                          </div>
-                                                        );
-                                                      }
-                                                    )}
-                                                  </div>
-                                                </DialogContent>
-                                              </Dialog>
-                                            </div>
+                                                                </DialogTrigger>
+                                                                <DialogContent className="max-w-2xl max-h-[75%] overflow-x-hidden overflow-y-auto">
+                                                                  <DialogHeader>
+                                                                    <DialogTitle>
+                                                                      Are you
+                                                                      sure you
+                                                                      want to
+                                                                      delete
+                                                                      this media
+                                                                      file?
+                                                                    </DialogTitle>
+                                                                  </DialogHeader>
 
-                                            <FormControl>
-                                              <input
-                                                type="file"
-                                                accept="image/*"
-                                                multiple
-                                                onChange={(e) => {
-                                                  const input =
-                                                    e.target as HTMLInputElement;
-                                                  const files = Array.from(
-                                                    input.files || []
-                                                  );
+                                                                  <div className="flex justify-end gap-2">
+                                                                    <Button
+                                                                      variant="outline"
+                                                                      onClick={() =>
+                                                                        setDeleteBoxOpen(
+                                                                          false
+                                                                        )
+                                                                      }
+                                                                    >
+                                                                      Cancel
+                                                                    </Button>
+                                                                    <Button
+                                                                      variant="outline"
+                                                                      size="sm"
+                                                                      className="bg-red-500"
+                                                                      onClick={() =>
+                                                                        handleDeletePropertyMedia(
+                                                                          selectedPropertyUpdate._id,
+                                                                          selectedMediaDelete._id
+                                                                        )
+                                                                      }
+                                                                    >
+                                                                      {isDeletingMedia
+                                                                        ? "Deleting..."
+                                                                        : "Delete"}
+                                                                    </Button>
+                                                                  </div>
+                                                                </DialogContent>
+                                                              </Dialog>
+                                                            </div>
+                                                          );
+                                                        }
+                                                      )}
+                                                    </div>
+                                                  </DialogContent>
+                                                </Dialog>
+                                              </div>
 
-                                                  if (files.length > 5) {
-                                                    alert(
-                                                      "You can only upload up to 5 images."
+                                              <FormControl>
+                                                <input
+                                                  type="file"
+                                                  accept="image/*"
+                                                  multiple
+                                                  onChange={(e) => {
+                                                    const input =
+                                                      e.target as HTMLInputElement;
+                                                    const files = Array.from(
+                                                      input.files || []
                                                     );
-                                                    // clear input value
-                                                    input.value = "";
-                                                    // also clear react-hook-updateForm state
-                                                    field.onChange([]);
-                                                    return;
-                                                  }
 
-                                                  field.onChange(files);
-                                                }}
-                                              />
-                                            </FormControl>
-                                            <FormMessage />
-                                          </FormItem>
-                                        )}
-                                      />
+                                                    if (files.length > 5) {
+                                                      alert(
+                                                        "You can only upload up to 5 images."
+                                                      );
+                                                      // clear input value
+                                                      input.value = "";
+                                                      // also clear react-hook-updateForm state
+                                                      field.onChange([]);
+                                                      return;
+                                                    }
+
+                                                    field.onChange(files);
+                                                  }}
+                                                />
+                                              </FormControl>
+                                              <FormMessage />
+                                            </FormItem>
+                                          )}
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <FormField
+                                          control={updateForm.control}
+                                          name="videos"
+                                          render={({ field }) => (
+                                            <FormItem>
+                                              <FormLabel>
+                                                Upload Video
+                                              </FormLabel>
+                                              <FormControl>
+                                                <Input
+                                                  type="file"
+                                                  accept="video/*"
+                                                  multiple
+                                                  onChange={(e) => {
+                                                    const files = e.target.files
+                                                      ? Array.from(
+                                                          e.target.files
+                                                        )
+                                                      : [];
+                                                    field.onChange(files);
+                                                  }}
+                                                />
+                                              </FormControl>
+                                              <FormMessage />
+                                            </FormItem>
+                                          )}
+                                        />
+                                      </div>
+                                      <div className="flex justify-end gap-2">
+                                        <Button
+                                          variant="outline"
+                                          onClick={() =>
+                                            handleCloseUpdateDialog()
+                                          }
+                                        >
+                                          Cancel
+                                        </Button>
+                                        <Button type="submit">
+                                          {isSubmittingUpdateForm
+                                            ? "Updating Property..."
+                                            : "Update Property"}
+                                        </Button>
+                                      </div>
                                     </div>
-                                    <div className="space-y-2">
-                                      <FormField
-                                        control={updateForm.control}
-                                        name="video"
-                                        render={({ field }) => (
-                                          <FormItem>
-                                            <FormLabel>Upload Video</FormLabel>
-                                            <FormControl>
-                                              <Input
-                                                type="file"
-                                                accept="video/*"
-                                                onChange={(e) => {
-                                                  const file =
-                                                    e.target.files?.[0];
-                                                  field.onChange(
-                                                    file ? [file] : []
-                                                  );
-                                                }}
-                                              />
-                                            </FormControl>
-                                            <FormMessage />
-                                          </FormItem>
-                                        )}
-                                      />
-                                    </div>
-                                    <div className="flex justify-end gap-2">
-                                      <Button
-                                        variant="outline"
-                                        onClick={() =>
-                                          handleCloseUpdateDialog()
-                                        }
-                                      >
-                                        Cancel
-                                      </Button>
-                                      <Button type="submit">
-                                        {isSubmittingUpdateForm
-                                          ? "Updating Property..."
-                                          : "Update Property"}
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </form>
-                              </Form>
-                            </DialogContent>
-                          </Dialog>
-                          <Dialog
-                            open={selectedPropertyIdDelete === property._id}
-                            onOpenChange={(isOpen) =>
-                              isOpen
-                                ? handleOpenDeleteDialog(property._id)
-                                : handleCloseDeleteDialog()
-                            }
-                          >
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="bg-red-500"
-                              >
-                                <Trash className="h-4 w-4 text-white" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Delete Property?</DialogTitle>
-                                <DialogDescription>
-                                  Are you sure you want to delete this property:{" "}
-                                  {property.title}
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="flex gap-2 justify-end">
+                                  </form>
+                                </Form>
+                              </DialogContent>
+                            </Dialog>
+                            <Dialog
+                              open={selectedPropertyIdDelete === property._id}
+                              onOpenChange={(isOpen) =>
+                                isOpen
+                                  ? handleOpenDeleteDialog(property._id)
+                                  : handleCloseDeleteDialog()
+                              }
+                            >
+                              <DialogTrigger asChild>
                                 <Button
                                   variant="outline"
-                                  onClick={handleCloseDeleteDialog}
-                                >
-                                  Cancel
-                                </Button>
-                                <Button
                                   size="sm"
                                   className="bg-red-500"
-                                  onClick={() => handleDelete(property._id)}
                                 >
-                                  {isDeleting ? "Deleting..." : "Delete"}
+                                  <Trash className="h-4 w-4 text-white" />
                                 </Button>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Delete Property?</DialogTitle>
+                                  <DialogDescription>
+                                    Are you sure you want to delete this
+                                    property: {property.title}
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="flex gap-2 justify-end">
+                                  <Button
+                                    variant="outline"
+                                    onClick={handleCloseDeleteDialog}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    className="bg-red-500"
+                                    onClick={() => handleDelete(property._id)}
+                                  >
+                                    {isDeleting ? "Deleting..." : "Delete"}
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
 
             <Pagination>
@@ -1385,6 +1660,31 @@ export default function AgentDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
+                <Select
+                  value={inquiriesStatus}
+                  onValueChange={setInquiriesStatus}
+                >
+                  <SelectTrigger className="w-full sm:max-w-[180px] border border-muted-foreground/50">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    {Object.values(InquiryStages).map((stage) => (
+                      <SelectItem key={stage} value={stage}>
+                        {stage.toLowerCase().charAt(0).toUpperCase() +
+                          stage.slice(1).toLowerCase()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm font-medium">
+                  Found {inquiriesCount} inquiries
+                </p>
+              </div>
+              {isLoading ? (
+                <PreloaderSpinner />
+              ) :(
               <div className="space-y-4">
                 {inquiries.map((inquiry: any) => (
                   <Card key={inquiry._id} className="p-4">
@@ -1395,7 +1695,8 @@ export default function AgentDashboard() {
                         </h4>
                         <p className="text-sm text-muted-foreground">
                           From: {inquiry.user.first_name}{" "}
-                          {inquiry.user.last_name} • {inquiry.createdAt}
+                          {inquiry.user.last_name} •{" "}
+                          {formatDate(inquiry.createdAt)}
                         </p>
                       </div>
                       <div className="relative">
@@ -1403,7 +1704,9 @@ export default function AgentDashboard() {
                           onValueChange={(newStatus) =>
                             handleInquiryStatusUpdate(inquiry._id, newStatus)
                           }
-                          defaultValue={isUpdatingInquiry ? "Updating..." : inquiry.status} // 👈 not defaultValue
+                          defaultValue={
+                            isUpdatingInquiry ? "Updating..." : inquiry.status
+                          } // 👈 not defaultValue
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="" />
@@ -1411,7 +1714,13 @@ export default function AgentDashboard() {
                           <SelectContent>
                             {Object.values(InquiryStages).map((stage) => (
                               <SelectItem key={stage} value={stage}>
-                                {isUpdatingInquiry ? "Updating..." : stage}
+                                {isUpdatingInquiry
+                                  ? "Updating..."
+                                  : stage
+                                      .toLowerCase()
+                                      .charAt(0)
+                                      .toUpperCase() +
+                                    stage.slice(1).toLowerCase()}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1449,7 +1758,7 @@ export default function AgentDashboard() {
                     </div>
                   </Card>
                 ))}
-              </div>
+              </div>)}
             </CardContent>
 
             <Pagination>

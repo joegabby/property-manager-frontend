@@ -3,6 +3,7 @@ import {
   NigerianStates,
   PropertyListingTypes,
   PropertyStatus,
+  PropertyType,
   UserRole,
 } from "./enums";
 
@@ -72,7 +73,10 @@ export const addPropertySchema = z.object({
     .default(PropertyStatus.AVAILABLE),
 
   images: z.any().optional(),
-  video: z.any().optional(),
+  videos: z.any().optional(),
+  propertyType: z.enum(Object.values(PropertyType) as [string, ...string[]]).default(PropertyType.APARTMENT),
+  bedrooms: z.coerce.number().min(0, "Bedrooms must be 0 or more"),
+  baths: z.coerce.number().min(0, "Baths must be 0 or more"),
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;

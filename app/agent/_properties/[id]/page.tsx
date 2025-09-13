@@ -79,7 +79,6 @@ export default function PropertyDetailPage() {
   const [loadingError, setLoadingError] = useState(false);
   const [inquiryMessage, setInquiryMessage] = useState("");
   const [sendingInquiry, setSendingInquiry] = useState(false);
-  const [userLoggedIn, setUserLoggedIn] = useState(false);
 
   const user =
     typeof window !== "undefined"
@@ -97,8 +96,6 @@ export default function PropertyDetailPage() {
     return null;
   }, [property]);
   useEffect(() => {
-    setUserLoggedIn(!!localStorage.getItem("token"));
-
     const fetchProperty = async () => {
       if (!params.id) return;
       try {
@@ -170,7 +167,7 @@ export default function PropertyDetailPage() {
           property.title,
           property.address,
           property.price,
-          property.status
+          property.status,
         ),
         formatPhoneNumber(property.agent?.phone)
       );
@@ -365,40 +362,19 @@ export default function PropertyDetailPage() {
                   <Globe className="h-5 w-5 mr-2" />
                   <span>{property.state}</span>
                 </div>
-                <div className="flex items-center text-muted-foreground">
+                <div className="flex items-center text-muted-foreground mb-2">
                   <MapPin className="h-5 w-5 mr-2" />
                   <span>{property.address}</span>
                 </div>
-                {/* <div className="prose max-w-none">
+                <div className="prose max-w-none">
                   <h3 className="text-lg font-semibold mb-3">Description</h3>
                   <p className="text-muted-foreground leading-relaxed">
                     {property.description}
                   </p>
-                </div> */}
-              </CardContent>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-                  <div className="flex items-center gap-2">
-                    <Bed className="h-5 w-5 text-muted-backgorund" />
-                    <div className="flex items-center gap-2">
-                      <div className="font-semibold">{property.bedrooms} x</div>
-                      <div className="text-sm text-muted-foreground">Bedrooms</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Bath className="h-5 w-5 text-muted-backgorund" />
-                    <div className="flex items-center gap-2">
-                      <div className="font-semibold">{property.baths} x</div>
-                      <div className="text-sm text-muted-foreground">Bathrooms</div>
-                    </div>
-                  </div>
                 </div>
+              </CardContent>
 
-                <div className="prose max-w-none">
-                  <h3 className="text-lg font-semibold mb-3">Description</h3>
-                  <p className="text-muted-foreground leading-relaxed">{property.description}</p>
-                </div>
-              </CardContent>
+              
             </Card>
 
             {/* Features */}
@@ -594,87 +570,79 @@ export default function PropertyDetailPage() {
                     <div className="text-xl text-primary">
                       {`${property.agent?.first_name} ${property.agent?.last_name}`}
                     </div>
-                    {userLoggedIn && (
-                      <div>
-                        {verifiedDoc ? (
-                          <div className="flex flex-col items-center justify-center">
-                            <Badge
-                              variant="secondary"
-                              className="bg-green-100 text-green-800"
-                            >
-                              <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                              Verified Agent
-                            </Badge>
-                            <Link
-                              className="underline mt-[10px] hover:text-blue-800"
-                              target="_blank"
-                              href={`${baseMediaUrl}/identifications/${verifiedDoc?.url}`}
-                            >
-                              View Identification Document
-                            </Link>
-                          </div>
-                        ) : (
+                    <div>
+                      {verifiedDoc ? (
+                        <div className="flex flex-col items-center justify-center">
                           <Badge
                             variant="secondary"
-                            className="bg-red-100 text-red-800"
+                            className="bg-green-100 text-green-800"
                           >
-                            <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                            Unverified Agent
+                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                            Verified Agent
                           </Badge>
-                        )}
-                      </div>
-                    )}
+                          <Link
+                            className="underline mt-[10px] hover:text-blue-800"
+                            target="_blank"
+                            href={`${baseMediaUrl}/identifications/${verifiedDoc?.url}`}
+                          >
+                            View Identification Document
+                          </Link>
+                        </div>
+                      ) : (
+                        <Badge
+                          variant="secondary"
+                          className="bg-red-100 text-red-800"
+                        >
+                          <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                          Unverified Agent
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                   {/* </div> */}
-                  {userLoggedIn ? (
-                    <>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">
-                            {property.agent?.phone}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Mail className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">
-                            {property.agent?.email}
-                          </span>
-                        </div>
-                      </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{property.agent?.phone}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{property.agent?.email}</span>
+                    </div>
+                  </div>
 
-                      <div className="space-y-2 pt-4">
-                        {/* <Button className="w-full">
+                  <div className="space-y-2 pt-4">
+                    {/* <Button className="w-full">
                       <Phone className="h-4 w-4 mr-2" />
                       Call Agent
                     </Button> */}
-                        <Dialog
-                          open={isInquiryOpen}
-                          onOpenChange={setIsInquiryOpen}
-                        >
-                          <DialogTrigger asChild>
-                            <Button className="w-full">
-                              <MessageSquare className="h-4 w-4 mr-2" />
-                              Make an Inquiry
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Send Inquiry</DialogTitle>
-                              <DialogDescription>
-                                Send a message to {property.agent?.first_name}{" "}
-                                about {property.title}
-                              </DialogDescription>
-                            </DialogHeader>
-                            <Form {...inquiryForm}>
-                              <form
-                                onSubmit={inquiryForm.handleSubmit(
-                                  handleSendInquiry
-                                )}
-                                className="space-y-4"
-                              >
-                                <div className="grid grid-cols-2 gap-4">
-                                  {/* <FormField
+                    <Dialog
+                      open={isInquiryOpen}
+                      onOpenChange={setIsInquiryOpen}
+                    >
+                      <DialogTrigger asChild>
+                        <Button className="w-full">
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Make an Inquiry
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Send Inquiry</DialogTitle>
+                          <DialogDescription>
+                            Send a message to {property.agent?.first_name} about{" "}
+                            {property.title}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <Form {...inquiryForm}>
+                          <form
+                            onSubmit={inquiryForm.handleSubmit(
+                              handleSendInquiry
+                            )}
+                            className="space-y-4"
+                          >
+                            <div className="grid grid-cols-2 gap-4">
+                              {/* <FormField
                                 control={inquiryForm.control}
                                 name="message"
                                 render={({ field }) => (
@@ -691,48 +659,36 @@ export default function PropertyDetailPage() {
                                   </FormItem>
                                 )}
                               /> */}
-                                  <textarea
-                                    id="message"
-                                    placeholder="I'm interested in this property. Could you provide more information?"
-                                    rows={4}
-                                    value={inquiryMessage}
-                                    onChange={(e) =>
-                                      setInquiryMessage(e.target.value)
-                                    }
-                                    className="w-full border rounded p-2"
-                                  />
-                                  <div className="flex justify-end gap-2">
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      onClick={() => setIsInquiryOpen(false)}
-                                    >
-                                      Cancel
-                                    </Button>
-                                    <Button onClick={() => handleSendInquiry()}>
-                                      {sendingInquiry
-                                        ? "Sending..."
-                                        : "Send Inquiry"}
-                                    </Button>
-                                  </div>
-                                </div>
-                              </form>
-                            </Form>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col justify-center items-center">
-                      <p>Login to view agent's Profile</p>
-                      <Link
-                        href={"/login"}
-                        className="w-full mt-[10px] text-white h-10 px-3 has-[>svg]:px-2.5 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-primary shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
-                      >
-                        Login
-                      </Link>
-                    </div>
-                  )}
+                              <textarea
+                                id="message"
+                                placeholder="I'm interested in this property. Could you provide more information?"
+                                rows={4}
+                                value={inquiryMessage}
+                                onChange={(e) =>
+                                  setInquiryMessage(e.target.value)
+                                }
+                                className="w-full border rounded p-2"
+                              />
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => setIsInquiryOpen(false)}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button onClick={() => handleSendInquiry()}>
+                                  {sendingInquiry
+                                    ? "Sending..."
+                                    : "Send Inquiry"}
+                                </Button>
+                              </div>
+                            </div>
+                          </form>
+                        </Form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -782,9 +738,6 @@ export default function PropertyDetailPage() {
   if (searchParams.get("from") === "agent") {
     return <AgentLayout>{content}</AgentLayout>;
   }
-  if (searchParams.get("from") === "user") {
-    return <UserLayout>{content}</UserLayout>;
-  }
 
-  return <>{content}</>;
+  return <UserLayout>{content}</UserLayout>;
 }
