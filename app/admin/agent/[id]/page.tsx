@@ -41,7 +41,7 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
-import { toast, useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import {
   getProfile,
   getProfileById,
@@ -142,6 +142,16 @@ export default function AgentProfile() {
     ) {
       setIsApproving(false);
       setIsApproveOpen(false);
+      toast({
+        variant:"success",
+        title: "Document Approved!",
+      });
+    }else{
+      toast({
+        variant:"destructive",
+        title: "Error",
+        description:"Document Approval Failed"
+      });
     }
   };
   const handleDocumentRejection = async () => {
@@ -286,7 +296,7 @@ export default function AgentProfile() {
     <div className="container mx-auto p-6 max-w-4xl">
       <Button variant="ghost" onClick={() => router.back()} className="mb-2">
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Properties
+        Go Back
       </Button>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Agent Profile</h1>
@@ -316,7 +326,7 @@ export default function AgentProfile() {
                   <AvatarImage
                     src={`${baseMediaUrl}/others/${userProfile.profile_pic}`}
                   />
-                  <AvatarFallback className="text-lg">SJ</AvatarFallback>
+                  <AvatarFallback className="text-lg">{userProfile.first_name?.charAt(0).toUpperCase()} {userProfile.last_name?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col justify-center items-center">
                   {userProfile._id !== user?.id ? (
@@ -405,7 +415,9 @@ export default function AgentProfile() {
                 <CardDescription className="my-[10px]">
                   {pendingDoc
                     ? "The identification document below is pending verification by the Admin"
-                    : "The identification document below has been verified by the admin"}
+                    : verifiedDoc ? "The identification document below has been verified by the admin"
+                    :"No Approved or Pending Identification document"
+                  }
                 </CardDescription>
 
                 {error && (

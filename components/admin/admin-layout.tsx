@@ -25,11 +25,12 @@ interface AdminLayoutProps {
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
-  { icon: Users, label: "Users", href: "/admin/users" },
   { icon: Building, label: "Properties", href: "/admin/properties" },
-  { icon: FileCheck, label: "Documents", href: "/admin/documents" },
-  { icon: MessageSquare, label: "Inquiries", href: "/admin/inquiries" },
-  { icon: Settings, label: "Settings", href: "/admin/settings" },
+  { icon: Users, label: "Profile", href: "/admin/profile" },
+
+  // { icon: FileCheck, label: "Documents", href: "/admin/documents" },
+  // { icon: MessageSquare, label: "Inquiries", href: "/admin/inquiries" },
+  // { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
@@ -38,6 +39,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     router.push("/login");
   };
 
@@ -45,10 +47,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     <div className="flex flex-col h-full">
       <div className="p-6">
         <Link href="/admin/dashboard" className="flex items-center space-x-2">
-          <Home className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold text-primary">PropertyHub</span>
+        <img
+            src= "/logo.png"
+            alt="castle and castle properties logo"
+            className=" object-contain"
+          />
+          {/* <Home className="h-6 w-6 text-primary" />
+          <span className="text-xl font-bold text-primary">
+            Castle and Castle Properties
+          </span> */}
         </Link>
-        <p className="text-sm text-muted-foreground mt-1">Admin Panel</p>
+        <p className="text-sm text-center text-muted-foreground mt-1">Admin Panel</p>
       </div>
 
       <nav className="flex-1 px-4 space-y-2">
@@ -89,7 +98,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetTrigger asChild>
           <Button
-            variant="ghost"
+            variant="secondary"
             size="icon"
             className="lg:hidden fixed top-4 left-4 z-50"
           >

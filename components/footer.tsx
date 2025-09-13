@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <footer className="bg-primary text-primary-foreground">
       {/* Newsletter Section */}
-      <div className="bg-secondary">
+      {/* <div className="bg-secondary">
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto text-center">
             <h3 className="text-2xl font-bold text-secondary-foreground mb-4">Subscribe To Our Newsletter</h3>
@@ -22,7 +22,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-12">
@@ -31,7 +31,7 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <Building2 className="h-8 w-8" />
-              <span className="text-2xl font-bold">PropertyHub</span>
+              <span className="text-2xl font-bold">Castle and Castle Properties</span>
             </div>
             <p className="text-primary-foreground/80 text-sm">
               Your trusted partner in finding the perfect property. Connecting property owners, agents, and buyers
@@ -123,11 +123,11 @@ export default function Footer() {
             <div className="space-y-3 text-sm">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-secondary" />
-                <span>info@propertyhub.com</span>
+                <span>favorcharles001@gmail.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-secondary" />
-                <span>+1 (555) 123-4567</span>
+                <span>+234 813 000 6860</span>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4 text-secondary" />
@@ -140,7 +140,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-primary-foreground/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-primary-foreground/80">© 2024 PropertyHub. All rights reserved.</p>
+            <p className="text-sm text-primary-foreground/80">© 2025 Castle and Castle Properties. All rights reserved.</p>
             <div className="flex space-x-6 text-sm">
               <Link href="/privacy" className="hover:text-secondary transition-colors">
                 Privacy Policy

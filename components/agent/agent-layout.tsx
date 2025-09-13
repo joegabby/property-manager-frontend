@@ -25,7 +25,7 @@ interface AgentLayoutProps {
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/agent/dashboard" },
-  // { icon: Building, label: "My Properties", href: "/agent/properties" },
+  { icon: Building, label: "Properties", href: "/agent/properties" },
   // { icon: MessageSquare, label: "Inquiries", href: "/agent/inquiries" },
   { icon: User, label: "Profile", href: "/agent/profile" },
 ];
@@ -36,6 +36,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     router.push("/login");
   };
 
@@ -43,10 +44,17 @@ export function AgentLayout({ children }: AgentLayoutProps) {
     <div className="flex flex-col h-full">
       <div className="p-6">
         <Link href="/agent/dashboard" className="flex items-center space-x-2">
-          <Home className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold text-primary">PropertyHub</span>
+          <img
+            src= "/logo.png"
+            alt="castle and castle properties logo"
+            className=" object-contain"
+          />
+          {/* <Home className="h-6 w-6 text-primary" />
+          <span className="text-xl font-bold text-primary">
+            Castle and Castle Properties
+          </span> */}
         </Link>
-        <p className="text-sm text-muted-foreground mt-1">Agent Portal</p>
+        <p className="text-sm text-center text-muted-foreground mt-1">Agent Portal</p>
       </div>
 
       <nav className="flex-1 px-4 space-y-2">

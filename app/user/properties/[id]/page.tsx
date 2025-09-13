@@ -779,12 +779,12 @@ export default function PropertyDetailPage() {
     </div>
   );
 
-  if (searchParams.get("from") === "agent") {
-    return <AgentLayout>{content}</AgentLayout>;
-  }
-  if (searchParams.get("from") === "user") {
-    return <UserLayout>{content}</UserLayout>;
-  }
+  // if (searchParams.get("from") === "agent") {
+  //   return <AgentLayout>{content}</AgentLayout>;
+  // }
+  // if (searchParams.get("from") === "user") {
+  //   return <UserLayout>{content}</UserLayout>;
+  // }
 
   return <>{content}</>;
 }

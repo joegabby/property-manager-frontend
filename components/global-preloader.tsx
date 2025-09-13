@@ -40,7 +40,7 @@ export default function GlobalPreloader() {
         </div>
 
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">PropertyHub</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Castle and Castle Properties</h1>
           <p className="text-gray-600">Your Gateway to Perfect Properties</p>
         </div>
 
@@ -48,7 +48,7 @@ export default function GlobalPreloader() {
           <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-cyan-600 to-pink-500 rounded-full animate-pulse"></div>
           </div>
-          <p className="text-sm text-gray-500 mt-2">{isLoading ? "Loading PropertyHub..." : "Navigating..."}</p>
+          <p className="text-sm text-gray-500 mt-2">{isLoading ? "Loading..." : "Navigating..."}</p>
         </div>
 
         <div className="flex justify-center space-x-4 mt-8">

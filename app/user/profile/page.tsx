@@ -256,7 +256,7 @@ export default function AgentProfile() {
                   <AvatarImage
                     src={`${baseMediaUrl}/others/${userProfile.profile_pic}`}
                   />
-                  <AvatarFallback className="text-lg">SJ</AvatarFallback>
+                  <AvatarFallback className="text-lg">{userProfile.first_name?.charAt(0).toUpperCase()} {userProfile.last_name?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <input

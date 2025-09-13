@@ -1,5 +1,5 @@
 export enum UserRole {
-  ADMIN = "ADMIN",
+  // ADMIN = "ADMIN",
   AGENT = "AGENT",
   TENANT = "TENANT",
 }
@@ -11,8 +11,8 @@ export enum DocumentVerificationStages {
 }
 export enum PropertyStatus {
   AVAILABLE = "AVAILABLE",
-  SOLD = "SOLD",
-  RENTED = "RENTED",
+  // SOLD = "SOLD",
+  // RENTED = "RENTED",
   UNAVAILABLE = "UNAVAILABLE",
 }
 export enum PropertyListingTypes {
@@ -68,6 +68,18 @@ export enum NigerianStates {
   YOBE = "Yobe",
   ZAMFARA = "Zamfara",
   FCT = "Federal Capital Territory",
+}
+export enum PropertyType {
+  APARTMENT = "Apartment",
+  HOUSE = "House",
+  CONDO = "Condominium",
+  VILLA = "Villa",
+  DUPLEX = "Duplex",
+  STUDIO = "Studio",
+  BUNGALOW = "Bungalow",
+  PENTHOUSE = "Penthouse",
+  TOWNHOUSE = "Townhouse",
+  OFFICE = "Office Space",
 }
 // export const baseMediaUrl = "http://localhost:5000/media"
 export const baseMediaUrl = "https://property-manager-backend-63ug.onrender.com/media"

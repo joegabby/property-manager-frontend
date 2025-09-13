@@ -97,13 +97,14 @@ export const updateIdentificationDoc = async (data:any): Promise<any> => {
     return error;
   }
 };
-export const getInquiries = async (): Promise<any> => {
+export const getInquiries = async (params:any): Promise<any> => {
   try {
     console.log(token)
     const response = await axios.get(`${baseUrl}/inquiries`, {
       headers: {
         Authorization: `Bearer ${token}`,
-      }
+      },
+      params
     })
     console.log(response);
     return response;
@@ -150,4 +151,16 @@ export const updateInquiry = async (data:updateInquiryDto): Promise<any> => {
     );
     return error;
   }
+};
+export const whatsappNotification = (
+  template: string,
+  receiver: string
+): void => {
+  // Encode the message to handle spaces & special characters
+  const encodedMessage = encodeURIComponent(template);
+
+  // Ensure phone number is in international format, e.g., "2348167118948"
+  const whatsappUrl = `https://wa.me/${receiver}?text=${encodedMessage}`;
+  // Open in new tab (works in browser)
+  window.open(whatsappUrl, "_blank");
 };

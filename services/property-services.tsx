@@ -3,7 +3,9 @@ import axios, { AxiosResponse } from "axios";
 import { headers } from "next/headers";
 
 const baseUrl = "https://property-manager-backend-63ug.onrender.com/api/v1/property";
+const baseUrl2 = "https://property-manager-backend-63ug.onrender.com/api/v1/all";
 // const baseUrl = "http://localhost:5000/api/v1/property";
+// const baseUrl2 = "http://localhost:5000/api/v1/all";
 const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
 export const createProperty = async (data: any): Promise<any> => {
@@ -20,17 +22,12 @@ export const createProperty = async (data: any): Promise<any> => {
       "Account creation failed:",
       error.response?.data || error.message
     );
-    throw error;
+    return error;
   }
 };
 export const getAllProperties = async (params:any): Promise<any> => {
   try {
-    const response = await axios.get(`${baseUrl}/properties`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params
-    });
+    const response = await axios.get(`${baseUrl2}/properties`, {params});
     console.log(response);
     return response;
   } catch (error: any) {
@@ -43,11 +40,7 @@ export const getAllProperties = async (params:any): Promise<any> => {
 };
 export const getProperty = async (propertyId:string): Promise<any> => {
   try {
-    const response = await axios.get(`${baseUrl}/${propertyId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
-    });
+    const response = await axios.get(`${baseUrl2}/${propertyId}`);
     console.log(response);
     return response;
   } catch (error: any) {
@@ -58,12 +51,13 @@ export const getProperty = async (propertyId:string): Promise<any> => {
     throw error;
   }
 };
-export const getPropertiesByAgentId = async (agentId:string): Promise<any> => {
+export const getPropertiesByAgentId = async (agentId:string,params:any): Promise<any> => {
   try {
     const response = await axios.get(`${baseUrl}/properties/${agentId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      params
     });
     console.log(response);
     return response;

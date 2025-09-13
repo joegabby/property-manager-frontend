@@ -63,3 +63,21 @@ export const rejectDocument = async (data: any): Promise<any> => {
     throw error;
   }
 };
+export const getAdminStats = async (): Promise<any> => {
+  try {
+    console.log(token);
+    const response = await axios.get(`${baseUrl}/admin_stats`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log(response);
+    return response;
+  } catch (error: any) {
+    console.error(
+      "Failed to reject document",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
