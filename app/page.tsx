@@ -135,9 +135,9 @@ export default function HomePage() {
     }
   };
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative flex items-center justify-center overflow-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <div
@@ -150,7 +150,7 @@ export default function HomePage() {
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
+        <div className="relative z-10 text-center text-white py-[100px] px-[20px] max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 text-balance">
             Find Your Perfect
             <span className="text-secondary block">Property</span>
