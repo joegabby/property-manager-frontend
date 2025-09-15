@@ -62,9 +62,9 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import page from "@/app/page";
-import { sendInquiry } from "@/services/user-services";
+import { sendInquiry, whatsappNotification } from "@/services/user-services";
 import { InquiryDto } from "@/lib/user-dto";
-import { formatPrice } from "@/lib/utils";
+import { formatPhoneNumber, formatPrice, generatePropertyInquiryMessage } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PriceRangeSlider } from "@/components/ui/min-max-slider";
 import PreloaderSpinner from "@/components/ui/preloader";
@@ -235,6 +235,19 @@ export default function Properties() {
       fetchProperties({});
       setSendingInquiry(false);
       setIsInquiryOpen(false);
+      const agentName = `${selectedProperty.agent?.first_name} ${selectedProperty.agent?.last_name}`;
+      // const rootDomain = window.location.origin;
+      // const propertyLink = `${rootDomain}/properties/${property._id}`
+      whatsappNotification(
+        generatePropertyInquiryMessage(
+          agentName,
+          selectedProperty.title,
+          selectedProperty.address,
+          selectedProperty.price,
+          selectedProperty.status
+        ),
+        formatPhoneNumber(selectedProperty.agent?.phone)
+      );
     }
   };
   return (

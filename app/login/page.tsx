@@ -52,7 +52,7 @@ export default function LoginPage() {
       } else if (userLogin.data.body.user.role === "AGENT") {
         router.push("/agent/dashboard");
       } else if (userLogin.data.body.user.role === "TENANT") {
-        router.push("/user/dashboard");
+        router.push("/user/properties");
       }
       localStorage.setItem("token", userLogin.data.body.token);
       localStorage.setItem("user", JSON.stringify(userLogin.data.body.user));

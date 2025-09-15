@@ -345,10 +345,14 @@ export default function PropertyDetailPage() {
                     <CardTitle className="text-3xl font-bold mb-2">
                       {property.title}
                     </CardTitle>
-
-                    {/* <p className="text-muted-foreground">
-                        {property.neighborhood}
-                      </p> */}
+                    <div className="mt-[20px] flex gap-2">
+                      <Badge className="bg-secondary/30 text-primary-background">
+                        {property.propertyType}
+                      </Badge>
+                      <Badge className="bg-primary/30 text-primary-background">
+                        {property.propertySubType}
+                      </Badge>
+                    </div>
                   </div>
                   <div className="text-right">
                     <div className="text-3xl font-bold text-primary">
@@ -382,21 +386,27 @@ export default function PropertyDetailPage() {
                     <Bed className="h-5 w-5 text-muted-backgorund" />
                     <div className="flex items-center gap-2">
                       <div className="font-semibold">{property.bedrooms} x</div>
-                      <div className="text-sm text-muted-foreground">Bedrooms</div>
+                      <div className="text-sm text-muted-foreground">
+                        Bedrooms
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Bath className="h-5 w-5 text-muted-backgorund" />
                     <div className="flex items-center gap-2">
                       <div className="font-semibold">{property.baths} x</div>
-                      <div className="text-sm text-muted-foreground">Bathrooms</div>
+                      <div className="text-sm text-muted-foreground">
+                        Bathrooms
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="prose max-w-none">
                   <h3 className="text-lg font-semibold mb-3">Description</h3>
-                  <p className="text-muted-foreground leading-relaxed">{property.description}</p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {property.description}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -586,7 +596,10 @@ export default function PropertyDetailPage() {
                         src={`${baseMediaUrl}/others/${property.agent?.profile_pic}`}
                         className="rounded-full"
                       />
-                      <AvatarFallback className="text-lg">{property.agent?.first_name?.charAt(0).toUpperCase()} {property.agent?.last_name?.charAt(0).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="text-lg">
+                        {property.agent?.first_name?.charAt(0).toUpperCase()}{" "}
+                        {property.agent?.last_name?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
                     </Avatar>
                   </div>
                   {/* <div className="text-center"> */}

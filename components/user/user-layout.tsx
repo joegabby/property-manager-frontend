@@ -14,9 +14,10 @@ interface UserLayoutProps {
 }
 
 const sidebarItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/user/dashboard" },
+  { icon: LayoutDashboard, label: "Home", href: "/user/properties" },
+  // { icon: LayoutDashboard, label: "Home", href: "/user/dashboard" },
   // { icon: Search, label: "Browse Agents", href: "/user/agents" },
-  { icon: Building, label: "Properties", href: "/user/properties" },
+  // { icon: Building, label: "Properties", href: "/user/properties" },
   // { icon: MessageSquare, label: "My Inquiries", href: "/user/inquiries" },
   { icon: User, label: "Profile", href: "/user/profile" },
   // { icon: Settings, label: "Settings", href: "/user/settings" },
@@ -35,7 +36,7 @@ export function UserLayout({ children }: UserLayoutProps) {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-6">
-        <Link href="/user/dashboard" className="flex items-center space-x-2">
+        <Link href="/user/properties" className="flex items-center space-x-2">
         <img
             src= "/logo.png"
             alt="castle and castle properties logo"

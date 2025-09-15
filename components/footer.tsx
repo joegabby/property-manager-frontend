@@ -141,7 +141,7 @@ export default function Footer() {
         <div className="border-t border-primary-foreground/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-primary-foreground/80">© 2025 Castle and Castle Properties. All rights reserved.</p>
-            <div className="flex space-x-6 text-sm">
+            {/* <div className="flex space-x-6 text-sm">
               <Link href="/privacy" className="hover:text-secondary transition-colors">
                 Privacy Policy
               </Link>
@@ -151,7 +151,7 @@ export default function Footer() {
               <Link href="/cookies" className="hover:text-secondary transition-colors">
                 Cookie Policy
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

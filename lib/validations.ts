@@ -3,6 +3,7 @@ import {
   NigerianStates,
   PropertyListingTypes,
   PropertyStatus,
+  PropertySubType,
   PropertyType,
   UserRole,
 } from "./enums";
@@ -74,7 +75,15 @@ export const addPropertySchema = z.object({
 
   images: z.any().optional(),
   videos: z.any().optional(),
-  propertyType: z.enum(Object.values(PropertyType) as [string, ...string[]]).default(PropertyType.APARTMENT),
+  propertyType: z.enum(Object.values(PropertyType) as [string, ...string[]], {
+    errorMap: () => ({ message: "Please select a property type" }),
+  }),
+  propertySubType: z
+    .string()
+    .nonempty("Please select a property subtype")
+    .refine((val) => Object.values(PropertySubType).includes(val as any), {
+      message: "Invalid subtype selected",
+    }),
   bedrooms: z.coerce.number().min(0, "Bedrooms must be 0 or more"),
   baths: z.coerce.number().min(0, "Baths must be 0 or more"),
 });
