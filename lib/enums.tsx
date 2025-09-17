@@ -72,10 +72,14 @@ export enum NigerianStates {
 export enum PropertyType {
   FLAT = "Flat",
   HOUSE = "House",
+  LAND = "Land",
+  COMMERCIAL_PROPERTY = "Commercial property",
 }
 
 export enum PropertySubType {
   APARTMENT = "Apartment",
+  STUDIO = "Studio",
+  BLOCK_OF_FLAT = "Block of Flat",
   TERRACED_DUPLEX = "Terraced Duplex",
   SEMI_DETACHED_DUPLEX = "Semi-Detached Duplex",
   FULLY_DETACHED_DUPLEX = "Fully Detached Duplex",
@@ -84,7 +88,11 @@ export enum PropertySubType {
 }
 
 export const PropertyTypeToSubtypes: Record<PropertyType, PropertySubType[]> = {
-  [PropertyType.FLAT]: [PropertySubType.APARTMENT],
+  [PropertyType.FLAT]: [
+    PropertySubType.APARTMENT,
+    PropertySubType.STUDIO,
+    PropertySubType.BLOCK_OF_FLAT,
+  ],
   [PropertyType.HOUSE]: [
     PropertySubType.TERRACED_DUPLEX,
     PropertySubType.SEMI_DETACHED_DUPLEX,
@@ -92,6 +100,9 @@ export const PropertyTypeToSubtypes: Record<PropertyType, PropertySubType[]> = {
     PropertySubType.FULLY_DETACHED_BUNGALOW,
     PropertySubType.SEMI_DETACHED_BUNGALOW,
   ],
+  [PropertyType.LAND]: [],
+  [PropertyType.COMMERCIAL_PROPERTY]: [],
 };
 // export const baseMediaUrl = "http://localhost:5000/media"
-export const baseMediaUrl = "https://property-manager-backend-63ug.onrender.com/media"
+export const baseMediaUrl =
+  "https://property-manager-backend-63ug.onrender.com/media";

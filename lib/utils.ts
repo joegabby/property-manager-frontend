@@ -5,29 +5,23 @@ import { format } from "date-fns";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-export function formatPhoneNumber(phone: string): string {
-  // Keep only digits (remove +, spaces, dashes, etc.)
+export function formatPhoneNumber(phone?: string): string {
+  if (!phone) return "";
+
   const cleaned = phone.replace(/\D/g, "");
 
-  if (cleaned.startsWith("0")) {
-    // Replace leading 0 with 234
-    return "234" + cleaned.slice(1);
-  }
+  if (cleaned.startsWith("0")) return "234" + cleaned.slice(1);
+  if (cleaned.startsWith("234")) return cleaned;
 
-  if (cleaned.startsWith("234")) {
-    // Already in correct format
-    return cleaned;
-  }
-
-  // Fallback: return as-is
   return cleaned;
 }
+
 export function generatePropertyInquiryMessage(
   agentName: string,
   title: string,
   address: string,
   price: number,
-  status: string,
+  status: string
 ): string {
   return `Hello ${agentName},
 

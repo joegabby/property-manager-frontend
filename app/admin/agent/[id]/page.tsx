@@ -251,46 +251,6 @@ export default function AgentProfile() {
     },
   });
 
-  const onProfileSubmit = async (data: AgentProfileFormData) => {
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast({
-        title: "Profile updated",
-        description: "Your agent profile has been successfully updated.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const onPasswordSubmit = async (data: PasswordFormData) => {
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast({
-        title: "Password updated",
-        description: "Your password has been successfully changed.",
-      });
-      passwordForm.reset();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update password. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">

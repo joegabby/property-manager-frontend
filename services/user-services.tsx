@@ -158,7 +158,6 @@ export const whatsappNotification = (
 ): void => {
   // Encode the message to handle spaces & special characters
   const encodedMessage = encodeURIComponent(template);
-
   // Ensure phone number is in international format, e.g., "2348167118948"
   const whatsappUrl = `https://wa.me/${receiver}?text=${encodedMessage}`;
   // Open in new tab (works in browser)

@@ -151,7 +151,7 @@ export default function AdminDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">
+              <div className="text-[14px] font-bold text-primary">
                 {adminStats.totalUsers}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
               <UserCheck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">
+              <div className="text-[14px] font-bold text-primary">
                 {adminStats.verifiedAgents}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
               <Building className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">
+              <div className="text-[14px] font-bold text-primary">
                 {adminStats.totalProperties}
               </div>
               <p className="text-xs text-muted-foreground">
