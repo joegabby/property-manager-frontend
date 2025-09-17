@@ -128,7 +128,7 @@ export default function PropertyDetailPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">
+          <h1 className="text-[14px] font-bold text-foreground mb-4">
             Property Not Found
           </h1>
           <Link href="/properties">
@@ -244,7 +244,7 @@ export default function PropertyDetailPage() {
                   className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white"
                   onClick={prevImage}
                 >
-                  <ChevronLeft className="h-5 w-5" />
+                  <ChevronLeft className="h-5 w-5 text-muted-foreground" />
                 </Button>
                 <Button
                   variant="secondary"
@@ -252,7 +252,7 @@ export default function PropertyDetailPage() {
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white"
                   onClick={nextImage}
                 >
-                  <ChevronRight className="h-5 w-5" />
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </Button>
 
                 {/* Action Buttons */}
@@ -490,7 +490,7 @@ export default function PropertyDetailPage() {
                             <h3 className="font-semibold mb-2">
                               {similar.title}
                             </h3>
-                            <p className="text-2xl font-bold text-primary mb-2">
+                            <p className="text-[14px] font-bold text-primary mb-2">
                               {formatPrice(similar.price)}
                             </p>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -522,7 +522,7 @@ export default function PropertyDetailPage() {
                 <CardContent className="space-y-4">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-xl font-bold text-primary">
+                      <span className="text-[12px] font-bold text-primary">
                         {`${property.agent?.first_name} ${property.agent?.last_name}`}
                       </span>
                     </div>
@@ -551,7 +551,7 @@ export default function PropertyDetailPage() {
                 <CardContent className="space-y-4">
                   {/* <div className="text-center">
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-xl font-bold text-primary">
+                    <span className="text-[12px] font-bold text-primary">
                       {`${property.agent?.first_name} ${property.agent?.last_name}`}
                     </span>
                   </div>
@@ -567,7 +567,7 @@ export default function PropertyDetailPage() {
                   </div>
                   {/* <div className="text-center"> */}
                   <div className="flex flex-col items-center justify-center mx-auto mb-3">
-                    <div className="text-xl text-primary">
+                    <div className="text-[12px] text-primary">
                       {`${property.agent?.first_name} ${property.agent?.last_name}`}
                     </div>
                     <div>

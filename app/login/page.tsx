@@ -73,7 +73,7 @@ export default function LoginPage() {
       </Link>
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary">
+          <CardTitle className="text-[14px] font-bold text-primary">
             Welcome Back
           </CardTitle>
           <CardDescription>Sign in to your account</CardDescription>

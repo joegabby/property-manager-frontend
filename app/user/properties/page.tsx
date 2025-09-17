@@ -44,7 +44,10 @@ import {
   Square,
   ArrowLeft,
   Home,
+  MessageCircle,
 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
+
 import Link from "next/link";
 import { getAllProperties } from "@/services/property-services";
 import {
@@ -52,6 +55,7 @@ import {
   NigerianStates,
   PropertyListingTypes,
   PropertyType,
+  PropertyTypeToSubtypes,
 } from "@/lib/enums";
 import {
   Pagination,
@@ -64,10 +68,16 @@ import {
 import page from "@/app/page";
 import { sendInquiry, whatsappNotification } from "@/services/user-services";
 import { InquiryDto } from "@/lib/user-dto";
-import { formatPhoneNumber, formatPrice, generatePropertyInquiryMessage } from "@/lib/utils";
+import {
+  formatPhoneNumber,
+  formatPrice,
+  generatePropertyInquiryMessage,
+} from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PriceRangeSlider } from "@/components/ui/min-max-slider";
 import PreloaderSpinner from "@/components/ui/preloader";
+import { useUser } from "@/hooks/useUser";
+import ItemCard from "@/components/ui/itemCard";
 
 // Mock data for user
 
@@ -75,24 +85,26 @@ export default function Properties() {
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
+  // const [typeFilter, setTypeFilter] = useState("all");
   const [isInquiryOpen, setIsInquiryOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const [properties, setProperties] = useState<any>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [listingType, setListingType] = useState("");
-  const [bedroomCount, setBedroomCount] = useState("0");
-  const [bathroomCount, setBathroomCount] = useState("0");
+  const [propertyType, setPropertyType] = useState("");
+  const [propertySubType, setPropertySubType] = useState("");
+  const [bedroomCount, setBedroomCount] = useState("");
+  const [bathroomCount, setBathroomCount] = useState("");
   const [inquiryMessage, setInquiryMessage] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [sendingInquiry, setSendingInquiry] = useState(false);
   const [userLoggedIn, setUserLoggedIn] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [isLoading, setIsLoading] = useState(false);
-
   const router = useRouter();
   const searchParams = useSearchParams();
+  const user = useUser();
 
   const fetchProperties = async (filters: any) => {
     // const filters = {
@@ -116,14 +128,18 @@ export default function Properties() {
   useEffect(() => {
     const state = searchParams.get("state") || "all";
     const listingTypeParam = searchParams.get("listingType") || "all";
+    const propertyTypeParam = searchParams.get("propertyType") || "all";
+    const propertySubTypeParam = searchParams.get("propertySubType") || "all";
     const minPrice = Number(searchParams.get("minPrice")) || 0;
-    const maxPrice = Number(searchParams.get("maxPrice")) || 0;
+    const maxPrice = Number(searchParams.get("maxPrice")) || 1000000;
     const key = searchParams.get("key") || "";
     const pageParam = Number(searchParams.get("page")) || 1;
 
     setLocationFilter(state);
     setListingType(listingTypeParam);
-    // setPriceRange([minPrice, maxPrice]);
+    setPriceRange([minPrice, maxPrice]);
+    setPropertyType(propertyTypeParam);
+    setPropertySubType(propertySubTypeParam);
     setSearchTerm(key);
     setPage(pageParam);
     setUserLoggedIn(!!localStorage.getItem("token"));
@@ -139,6 +155,8 @@ export default function Properties() {
       orderBy: sortBy,
       bedrooms: bedroomCount,
       bathrooms: bathroomCount,
+      propertyType,
+      propertySubType,
       limit: 9,
     });
   }, [searchParams]);
@@ -256,18 +274,18 @@ export default function Properties() {
         {/* Header */}
         <div className="bg-gradient-to-r from-primary/10 to-accent/10 py-12">
           <div className="container mx-auto px-4">
-            {/* <Link
+            <Link
               href={"/"}
               className="h-8 px-3 has-[>svg]:px-2.5 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
             >
               <Home className="h-4 w-4 mr-2" />
               Back to Home Page
-            </Link> */}
+            </Link>
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold text-foreground mb-4">
                 Find Your Perfect Property
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-[12px] text-muted-foreground">
                 Discover amazing properties from trusted agents
               </p>
             </div>
@@ -327,10 +345,10 @@ export default function Properties() {
                     Property Type
                   </p>
                   <Select
-                    value={typeFilter}
+                    value={propertyType}
                     onValueChange={(val) => {
-                      setTypeFilter(val);
-                      updateQuery({ listingType: val });
+                      setPropertyType(val);
+                      updateQuery({ propertyType: val });
                     }}
                   >
                     <SelectTrigger className="w-full border border-muted-foreground/50 bg-muted/50 text-muted-foreground">
@@ -349,28 +367,47 @@ export default function Properties() {
                 </div>
                 <div className="items-center justify-center">
                   <p className="text-sm font-medium text-muted-foreground">
-                    Listing Type
+                    Property Sub-Type
                   </p>
-                  <Select
-                    value={typeFilter}
-                    onValueChange={(val) => {
-                      setTypeFilter(val);
-                      updateQuery({ listingType: val });
-                    }}
-                  >
-                    <SelectTrigger className="w-full border border-muted-foreground/50 bg-muted/50 text-muted-foreground">
-                      <SelectValue placeholder="Property Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
 
-                      {Object.values(PropertyListingTypes).map((types) => (
-                        <SelectItem key={types} value={types}>
-                          {types}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {(() => {
+                    const selectedType = propertyType as
+                      | PropertyType
+                      | undefined;
+                    const subtypeOptions =
+                      selectedType && PropertyTypeToSubtypes[selectedType]
+                        ? PropertyTypeToSubtypes[selectedType]
+                        : [];
+
+                    return (
+                      <Select
+                        onValueChange={(value) => {
+                          setPropertySubType(value);
+                          updateQuery({ propertySubType: value }, true);
+                        }}
+                        value={propertySubType}
+                      >
+                        <SelectTrigger className="w-full border border-muted-foreground/50 bg-muted/50 text-muted-foreground">
+                          <SelectValue placeholder="Property Sub-Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+
+                          {subtypeOptions.length > 0 ? (
+                            subtypeOptions.map((subtype) => (
+                              <SelectItem key={subtype} value={subtype}>
+                                {subtype}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="null" disabled>
+                              No subtypes available
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    );
+                  })()}
                 </div>
                 <div className="items-center justify-center">
                   <p className="text-sm font-medium text-muted-foreground">
@@ -405,8 +442,33 @@ export default function Properties() {
                     setPriceRange([val[0], val[1]]);
                     updateQuery({ minPrice: val[0], maxPrice: val[1] });
                   }}
-                  className="lg:col-span-2"
+                  className="lg:col-span-1"
                 />
+                <div className="items-center justify-center">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Listing Type
+                  </p>
+                  <Select
+                    value={listingType}
+                    onValueChange={(val) => {
+                      setListingType(val);
+                      updateQuery({ listingType: val });
+                    }}
+                  >
+                    <SelectTrigger className="w-full border border-muted-foreground/50 bg-muted/50 text-muted-foreground">
+                      <SelectValue placeholder="Property Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+
+                      {Object.values(PropertyListingTypes).map((types) => (
+                        <SelectItem key={types} value={types}>
+                          {types}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="items-center justify-center">
                   <p className="text-sm font-medium text-muted-foreground">
                     Bedrooms
@@ -422,7 +484,7 @@ export default function Properties() {
                       <SelectValue placeholder="Bedrooms" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="0">Default</SelectItem>
+                      <SelectItem value="all">Default</SelectItem>
                       <SelectItem value="1">1</SelectItem>
                       <SelectItem value="2">2</SelectItem>
                       <SelectItem value="3">3</SelectItem>
@@ -446,7 +508,7 @@ export default function Properties() {
                       <SelectValue placeholder="Bathrooms" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="0">Default</SelectItem>
+                      <SelectItem value="all">Default</SelectItem>
                       <SelectItem value="1">1</SelectItem>
                       <SelectItem value="2">2</SelectItem>
                       <SelectItem value="3">3</SelectItem>
@@ -465,93 +527,14 @@ export default function Properties() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {properties.map((property: any) => (
-                <Link key={property._id} href={`/properties/${property._id}`}>
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
-                    <div className="relative">
-                      {(() => {
-                        const firstImage = property.media.find(
-                          (item: any) => item.type.toLowerCase() === "image"
-                        );
-                        return (
-                          <img
-                            src={
-                              `${baseMediaUrl}/images/${firstImage?.url}` ||
-                              "/placeholder.svg"
-                            }
-                            alt={property.title}
-                            className="w-full h-48 object-cover"
-                          />
-                        );
-                      })()}
-                      <p className="absolute top-3 right-3 ">
-                        {getStatusBadge(property.status.toLowerCase())}
-                      </p>
-
-                      {/* <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-3 right-3 bg-white/80 hover:bg-white text-gray-600 hover:text-red-500"
-                    >
-                      <Heart className="h-5 w-5" />
-                    </Button> */}
-                      <Badge className="absolute bottom-3 left-3 bg-primary text-primary-foreground">
-                        {property.state}
-                      </Badge>
-                      <Badge className="absolute bottom-3 right-3 bg-primary text-primary-foreground">
-                        {property.listingType}
-                      </Badge>
-                    </div>
-
-                    <CardContent className="">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-xl font-bold text-foreground line-clamp-2">
-                          {property.title}
-                        </h3>
-                        <span className="text-2xl font-bold text-primary ml-2">
-                          {formatPrice(property.price)}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center text-muted-foreground mb-4">
-                        <MapPin className="h-4 w-4 mr-2" />
-                        <span>{property.address}</span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center text-muted-foreground">
-                          <p className="text-sm text-muted-foreground/70">
-                            Agent:{" "}
-                          </p>
-                          <span className="text-sm text-muted-foreground/70">
-                            {property.agent?.first_name}{" "}
-                            {property.agent?.last_name}
-                          </span>
-                        </div>
-                        {userLoggedIn && (
-                          <Button
-                            size="sm"
-                            className=""
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleInquiry(property);
-                            }}
-                            disabled={property.hasInquired}
-                          >
-                            {property.hasInquired ? "Inquired" : "Inquire"}
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                <ItemCard  key={property._id} property={property} onInquire={fetchProperties}/>
               ))}
             </div>
           )}
 
           {properties.length === 0 && (
             <div className="text-center py-12">
-              <h3 className="text-xl font-semibold text-foreground mb-2">
+              <h3 className="text-[12px] font-semibold text-foreground mb-2">
                 No properties found
               </h3>
               <p className="text-muted-foreground">

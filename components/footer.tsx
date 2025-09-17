@@ -10,7 +10,7 @@ export default function Footer() {
       {/* <div className="bg-secondary">
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto text-center">
-            <h3 className="text-2xl font-bold text-secondary-foreground mb-4">Subscribe To Our Newsletter</h3>
+            <h3 className="text-[14px] font-bold text-secondary-foreground mb-4">Subscribe To Our Newsletter</h3>
             <p className="text-secondary-foreground/80 mb-6">
               Get the latest property updates, market insights, and exclusive deals delivered to your inbox.
             </p>
@@ -31,7 +31,7 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <Building2 className="h-8 w-8" />
-              <span className="text-2xl font-bold">Castle and Castle Properties</span>
+              <span className="text-[14px] font-bold">Castle and Castle Properties</span>
             </div>
             <p className="text-primary-foreground/80 text-sm">
               Your trusted partner in finding the perfect property. Connecting property owners, agents, and buyers

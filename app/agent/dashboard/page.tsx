@@ -52,8 +52,10 @@ import {
   X,
   MessageCircle,
   Mail,
-  Phone,
+  Phone
 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
+
 import { useForm } from "react-hook-form";
 import { AddPropertyFormData, addPropertySchema } from "@/lib/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -437,7 +439,7 @@ export default function AgentDashboard() {
             <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">
+            <div className="text-[14px] font-bold text-primary">
               {agentStats.totalProperties}
             </div>
             {/* <p className="text-xs text-muted-foreground">
@@ -454,7 +456,7 @@ export default function AgentDashboard() {
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">
+            <div className="text-[14px] font-bold text-primary">
               {agentStats.totalInquiries}
             </div>
             {/* <p className="text-xs text-muted-foreground">This month</p> */}
@@ -469,7 +471,7 @@ export default function AgentDashboard() {
             <CardTitle className="text-sm font-medium">&#8358;</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">
+            <div className="text-[14px] font-bold text-primary">
               {formatPrice(agentStats.totalPrice)}
             </div>
             {/* <p className="text-xs text-muted-foreground">Portfolio average</p> */}

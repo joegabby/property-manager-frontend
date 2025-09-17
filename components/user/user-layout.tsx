@@ -43,7 +43,7 @@ export function UserLayout({ children }: UserLayoutProps) {
             className=" object-contain"
           />
           {/* <Home className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold text-primary">Castle and Castle Properties</span> */}
+          <span className="text-[12px] font-bold text-primary">Castle and Castle Properties</span> */}
         </Link>
         <p className="text-sm text-center text-muted-foreground mt-1">Find Your Home</p>
       </div>

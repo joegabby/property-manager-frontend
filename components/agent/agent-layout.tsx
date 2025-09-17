@@ -50,7 +50,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
             className=" object-contain"
           />
           {/* <Home className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold text-primary">
+          <span className="text-[12px] font-bold text-primary">
             Castle and Castle Properties
           </span> */}
         </Link>

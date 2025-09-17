@@ -173,7 +173,7 @@ export default function UserDashboard() {
               <h1 className="text-4xl font-bold text-foreground mb-4">
                 Find Your Perfect Property
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-[12px] text-muted-foreground">
                 Discover amazing properties from trusted agents
               </p>
             </div>
@@ -304,10 +304,10 @@ export default function UserDashboard() {
 
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-xl font-bold text-foreground line-clamp-2">
+                      <h3 className="text-[12px] font-bold text-foreground line-clamp-2">
                         {property.title}
                       </h3>
-                      <span className="text-2xl font-bold text-primary ml-2">
+                      <span className="text-[14px] font-bold text-primary ml-2">
                         {formatPrice(property.price)}
                       </span>
                     </div>
@@ -343,7 +343,7 @@ export default function UserDashboard() {
 
           {properties.length === 0 && (
             <div className="text-center py-12">
-              <h3 className="text-xl font-semibold text-foreground mb-2">
+              <h3 className="text-[12px] font-semibold text-foreground mb-2">
                 No properties found
               </h3>
               <p className="text-muted-foreground">

@@ -27,7 +27,11 @@ export const createProperty = async (data: any): Promise<any> => {
 };
 export const getAllProperties = async (params:any): Promise<any> => {
   try {
-    const response = await axios.get(`${baseUrl2}/properties`, {params});
+    const response = await axios.get(`${baseUrl2}/properties`, {
+      headers:{
+        Authorization: `Bearer ${token}`
+      },
+      params});
     console.log(response);
     return response;
   } catch (error: any) {
@@ -40,7 +44,11 @@ export const getAllProperties = async (params:any): Promise<any> => {
 };
 export const getProperty = async (propertyId:string): Promise<any> => {
   try {
-    const response = await axios.get(`${baseUrl2}/${propertyId}`);
+    const response = await axios.get(`${baseUrl2}/${propertyId}`,{
+      headers:{
+        Authorization: `Bearer ${token}`
+      }
+    });
     console.log(response);
     return response;
   } catch (error: any) {

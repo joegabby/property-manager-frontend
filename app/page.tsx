@@ -42,6 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
 import { useRouter } from "next/navigation";
 
 export default function HomePage() {
@@ -52,8 +53,8 @@ export default function HomePage() {
   const [locationFilter, setLocationFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [listingType, setListingType] = useState("");
-  const [listingStatus, setListingStatus] = useState("");
+  const [listingType, setListingType] = useState("all");
+  const [propertyType, setPropertyType] = useState("all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [isInquiryOpen, setIsInquiryOpen] = useState(false);
   const [inquiryMessage, setInquiryMessage] = useState("");
@@ -94,6 +95,10 @@ export default function HomePage() {
 
     if (listingType && listingType !== "all") {
       query.set("listingType", listingType);
+    }
+
+    if (propertyType && propertyType !== "all") {
+      query.set("propertyType", propertyType);
     }
 
     if (priceRange[0]) {
@@ -208,7 +213,7 @@ export default function HomePage() {
                 </Select>
               </div>
               <div className="relative border border-muted-foreground/50 rounded-[10px]">
-                <Select value={listingStatus} onValueChange={setListingStatus}>
+                <Select value={propertyType} onValueChange={setPropertyType}>
                   <SelectTrigger className="w-full h-[20px] border border-muted-foreground/50 bg-muted/50 text-muted-foreground">
                     <SelectValue placeholder="Property Type" />
                   </SelectTrigger>
@@ -291,101 +296,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {properties.slice(0, 6).map((property: any) => (
-              // <Card
-              //   key={property._id}
-              //   className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 bg-card"
-              // >
-              //   <div className="relative overflow-hidden">
-              //     {(() => {
-              //       const firstImage = property.media.find(
-              //         (item: any) => item.type.toLowerCase() === "image"
-              //       );
-              //       return (
-              //         <img
-              //           src={
-              //             `${baseMediaUrl}/images/${firstImage?.url}` ||
-              //             "/placeholder.svg"
-              //           }
-              //           alt={property.title}
-              //           className="w-full h-48 object-cover"
-              //         />
-              //       );
-              //     })()}
-              //     {/* <img
-              //       src={property.image || "/placeholder.svg"}
-              //       alt={property.title}
-              //       className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-              //     /> */}
-              //     <div className="absolute top-4 left-4">
-              //       <Badge
-              //         variant="secondary"
-              //         className="bg-secondary text-secondary-foreground"
-              //       >
-              //         {property.type}
-              //       </Badge>
-              //     </div>
-              //     <Button
-              //       variant="ghost"
-              //       size="icon"
-              //       className="absolute top-4 right-4 bg-white/80 hover:bg-white text-foreground"
-              //     >
-              //       <Heart className="h-5 w-5" />
-              //     </Button>
-              //     <div className="absolute bottom-4 right-4 flex items-center space-x-1 bg-white/90 rounded-full px-2 py-1">
-              //       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              //       <span className="text-sm font-medium">
-              //         {property.rating}
-              //       </span>
-              //     </div>
-              //   </div>
-
-              //   <CardContent className="p-6">
-              //     <div className="flex items-center text-muted-foreground text-sm mb-2">
-              //       <MapPin className="h-4 w-4 mr-1" />
-              //       {property.location}
-              //     </div>
-
-              //     <h3 className="text-xl font-bold text-card-foreground mb-2 group-hover:text-primary transition-colors">
-              //       {property.title}
-              //     </h3>
-
-              //     <div className="flex items-center justify-between mb-4">
-              //       <span className="text-2xl font-bold text-primary">
-              //         {formatPrice(property.price)}
-              //       </span>
-              //     </div>
-
-              //     <div className="flex items-center space-x-4 text-muted-foreground text-sm mb-4">
-              //       <div className="flex items-center">
-              //         <Bed className="h-4 w-4 mr-1" />
-              //         {property.bedrooms} bed
-              //       </div>
-              //       <div className="flex items-center">
-              //         <Bath className="h-4 w-4 mr-1" />
-              //         {property.bathrooms} bath
-              //       </div>
-              //       <div className="flex items-center">
-              //         <Square className="h-4 w-4 mr-1" />
-              //         {property.sqft} sqft
-              //       </div>
-              //     </div>
-
-              //     <div className="flex items-center justify-between">
-              //       <span className="text-sm text-muted-foreground">
-              //         Agent: {property.agent.first_name}
-              //       </span>
-              //       <Button
-              //         asChild
-              //         size="sm"
-              //         className="bg-primary hover:bg-primary/90"
-              //       >
-              //         <Link href={`/properties/${property.id}`}>
-              //           View Details
-              //         </Link>
-              //       </Button>
-              //     </div>
-              //   </CardContent>
-              // </Card>
+              
               <Link
                 key={property._id}
                 href={`/properties/${property._id}`}
@@ -420,10 +331,10 @@ export default function HomePage() {
 
                   <CardContent className="">
                     <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-xl font-bold text-foreground line-clamp-2">
+                      <h3 className="text-[12px] font-bold text-foreground line-clamp-2">
                         {property.title}
                       </h3>
-                      <span className="text-2xl font-bold text-primary ml-2">
+                      <span className="text-[14px] font-bold text-primary ml-2">
                         {formatPrice(property.price)}
                       </span>
                     </div>
@@ -435,8 +346,8 @@ export default function HomePage() {
 
                      <div className="flex items-center justify-between">
                       <div className="flex items-center text-muted-foreground">
-                        <p className="text-sm text-muted-foreground/70">
-                          Agent:{" "}
+                        <p className="mr-[5px] text-sm text-muted-foreground/70">
+                          By:
                         </p>
                         <span className="text-sm text-muted-foreground/70">
                           {property.agent?.first_name}{" "}
@@ -528,7 +439,7 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Building2 className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold text-card-foreground mb-4">
+              <h3 className="text-[14px] font-bold text-card-foreground mb-4">
                 For Property Owners
               </h3>
               <p className="text-muted-foreground mb-6">
@@ -540,7 +451,7 @@ export default function HomePage() {
                 variant="outline"
                 className="w-full bg-transparent"
               >
-                <Link href="/register?role=owner">Get Started</Link>
+                <Link href="/register">Get Started</Link>
               </Button>
             </Card>
 
@@ -548,7 +459,7 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Star className="h-8 w-8 text-secondary" />
               </div>
-              <h3 className="text-2xl font-bold text-card-foreground mb-4">
+              <h3 className="text-[14px] font-bold text-card-foreground mb-4">
                 For Agents
               </h3>
               <p className="text-muted-foreground mb-6">
@@ -560,7 +471,7 @@ export default function HomePage() {
                 variant="outline"
                 className="w-full bg-transparent"
               >
-                <Link href="/register?role=agent">Join as Agent</Link>
+                <Link href="/register">Join as Agent</Link>
               </Button>
             </Card>
 
@@ -568,7 +479,7 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold text-card-foreground mb-4">
+              <h3 className="text-[14px] font-bold text-card-foreground mb-4">
                 For Buyers & Renters
               </h3>
               <p className="text-muted-foreground mb-6">
